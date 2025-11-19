@@ -1,27 +1,40 @@
-"use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
+"use client"
+
+import React, { useEffect, useMemo, useRef, useState } from "react"
+import * as THREE from "three"
 
 type Slide = {
-  title?: string;
-  subtitle?: string;
-  imageSrc?: string;
-  videoSrc?: string;
-  qrSrc?: string;
-};
+  title?: string
+  subtitle?: string
+  imageSrc?: string
+  videoSrc?: string
+  qrSrc?: string
+}
 
-/**
- * Single shader frame (one instance) — ideal for rendering exactly one visual per section.
- *
- * Props:
- * - title: label rendered in the glass overlay
- * - subtitle: small text under the title
- * - colors: [c1, c2, c3, c4] hex strings
- * - initial: { scale, speed, ax, ay, az, aw, bx, by }
- * - showControls: toggle on-screen sliders (default true)
- * - slides: optional array of slides for the right-hand content.
- *           If length > 1, slide navigation is shown.
- */
+type ShaderFrameProps = {
+  title?: string
+  subtitle?: string
+  colors?: [string, string, string, string]
+  initial?: {
+    scale: number
+    speed: number
+    ax: number
+    ay: number
+    az: number
+    aw: number
+    bx: number
+    by: number
+  }
+  showControls?: boolean
+  className?: string
+  /** Optional slide deck – if length > 1 and no children, navigation appears */
+  slides?: Slide[]
+  /** Show the default right-hand text column in the built-in layout */
+  showText?: boolean
+  /** Custom inner layout. If provided, replaces the default 3-column layout entirely. */
+  children?: React.ReactNode
+}
+
 export default function ShaderFrame({
   title = "Liquid Meta",
   subtitle = "Variation",
@@ -39,68 +52,61 @@ export default function ShaderFrame({
   showControls = false,
   className = "",
   slides,
-}: {
-  title?: string;
-  subtitle?: string;
-  colors?: [string, string, string, string];
-  initial?: {
-    scale: number;
-    speed: number;
-    ax: number;
-    ay: number;
-    az: number;
-    aw: number;
-    bx: number;
-    by: number;
-  };
-  showControls?: boolean;
-  className?: string;
-  slides?: Slide[];
-}) {
-  // Mobile fallback
-  const [isMobile, setIsMobile] = useState(false);
+  showText = true,
+  children,
+}: ShaderFrameProps) {
+  /* ---------- Mobile fallback ---------- */
+
+  const [isMobile, setIsMobile] = useState(false)
+
   useEffect(() => {
+    if (typeof window === "undefined") return
     const m =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
         navigator.userAgent
-      ) || window.innerWidth < 768;
-    setIsMobile(m);
-  }, []);
+      ) || window.innerWidth < 768
+    setIsMobile(m)
+  }, [])
 
-  // Shader controls
-  const [scale, setScale] = useState(initial.scale);
-  const [speed, setSpeed] = useState(initial.speed);
-  const [ax, setAx] = useState(initial.ax);
-  const [ay, setAy] = useState(initial.ay);
-  const [az, setAz] = useState(initial.az);
-  const [aw, setAw] = useState(initial.aw);
-  const [bx, setBx] = useState(initial.bx);
-  const [by, setBy] = useState(initial.by);
+  /* ---------- Shader controls ---------- */
 
-  // Slides state
-  const [slideIndex, setSlideIndex] = useState(0);
-  const hasSlides = (slides?.length ?? 0) > 0;
-  const hasMultipleSlides = (slides?.length ?? 0) > 1;
-  const currentSlide = hasSlides ? slides![slideIndex] : undefined;
+  const [scale, setScale] = useState(initial.scale)
+  const [speed, setSpeed] = useState(initial.speed)
+  const [ax, setAx] = useState(initial.ax)
+  const [ay, setAy] = useState(initial.ay)
+  const [az, setAz] = useState(initial.az)
+  const [aw, setAw] = useState(initial.aw)
+  const [bx, setBx] = useState(initial.bx)
+  const [by, setBy] = useState(initial.by)
+
+  /* ---------- Slides state ---------- */
+
+  const [slideIndex, setSlideIndex] = useState(0)
+  const hasSlides = (slides?.length ?? 0) > 0
+  const hasMultipleSlides = (slides?.length ?? 0) > 1 && !children
+  const currentSlide = hasSlides ? slides![slideIndex] : undefined
 
   const nextSlide = () => {
-    if (!slides || slides.length <= 1) return;
-    setSlideIndex((i) => (i + 1) % slides.length);
-  };
+    if (!slides || slides.length <= 1) return
+    setSlideIndex((i) => (i + 1) % slides.length)
+  }
 
   const prevSlide = () => {
-    if (!slides || slides.length <= 1) return;
-    setSlideIndex((i) => (i - 1 + slides.length) % slides.length);
-  };
+    if (!slides || slides.length <= 1) return
+    setSlideIndex((i) => (i - 1 + slides.length) % slides.length)
+  }
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.OrthographicCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+  /* ---------- Three.js refs ---------- */
 
-  // Shaders
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const sceneRef = useRef<THREE.Scene | null>(null)
+  const cameraRef = useRef<THREE.OrthographicCamera | null>(null)
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
+  const materialRef = useRef<THREE.ShaderMaterial | null>(null)
+
+  /* ---------- Shaders ---------- */
+
   const vertexShader = useMemo(
     () => `
       varying vec2 vUv;
@@ -110,7 +116,7 @@ export default function ShaderFrame({
       }
     `,
     []
-  );
+  )
 
   const fragmentShader = useMemo(
     () => `
@@ -156,37 +162,38 @@ export default function ShaderFrame({
       }
     `,
     []
-  );
+  )
 
-  // Init three
+  /* ---------- Init three ---------- */
+
   useEffect(() => {
-    if (isMobile) return; // CSS fallback
+    if (isMobile) return
 
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
+    const canvas = canvasRef.current
+    const container = containerRef.current
+    if (!canvas || !container) return
 
     const toVec3 = (hex: string) => {
-      const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
       return r
         ? new THREE.Vector3(
             parseInt(r[1], 16) / 255,
             parseInt(r[2], 16) / 255,
             parseInt(r[3], 16) / 255
           )
-        : new THREE.Vector3(1, 1, 1);
-    };
+        : new THREE.Vector3(1, 1, 1)
+    }
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-    camera.position.z = 1;
+    const scene = new THREE.Scene()
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10)
+    camera.position.z = 1
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
       antialias: false,
       powerPreference: "high-performance",
-    });
+    })
 
     const material = new THREE.ShaderMaterial({
       vertexShader,
@@ -208,75 +215,78 @@ export default function ShaderFrame({
         color4: { value: toVec3(colors[3]) },
       },
       transparent: true,
-    });
+    })
 
-    const geometry = new THREE.PlaneGeometry(2, 2);
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
+    const geometry = new THREE.PlaneGeometry(2, 2)
+    const mesh = new THREE.Mesh(geometry, material)
+    scene.add(mesh)
 
-    sceneRef.current = scene;
-    cameraRef.current = camera;
-    rendererRef.current = renderer;
-    materialRef.current = material;
+    sceneRef.current = scene
+    cameraRef.current = camera
+    rendererRef.current = renderer
+    materialRef.current = material
 
     const resize = () => {
-      if (!renderer || !container) return;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      renderer.setSize(width, height, false);
-      renderer.setPixelRatio(window.devicePixelRatio || 1);
-      material.uniforms.resolution.value.set(width, height);
-    };
+      if (!renderer || !container) return
+      const width = container.clientWidth
+      const height = container.clientHeight
+      renderer.setSize(width, height, false)
+      renderer.setPixelRatio(window.devicePixelRatio || 1)
+      material.uniforms.resolution.value.set(width, height)
+    }
 
-    resize();
-    window.addEventListener("resize", resize);
+    resize()
+    window.addEventListener("resize", resize)
 
-    let raf = 0;
+    let raf = 0
     const loop = () => {
-      raf = requestAnimationFrame(loop);
-      const time = performance.now() / 1000.0;
-      material.uniforms.time.value = time;
-      renderer.render(scene, camera);
-    };
-    raf = requestAnimationFrame(loop);
+      raf = requestAnimationFrame(loop)
+      const time = performance.now() / 1000.0
+      material.uniforms.time.value = time
+      renderer.render(scene, camera)
+    }
+    raf = requestAnimationFrame(loop)
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-      renderer.dispose();
-      material.dispose();
-      geometry.dispose();
-    };
+      cancelAnimationFrame(raf)
+      window.removeEventListener("resize", resize)
+      renderer.dispose()
+      material.dispose()
+      geometry.dispose()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, vertexShader, fragmentShader, colors.join("")]);
+  }, [isMobile, vertexShader, fragmentShader, colors.join("")])
 
-  // Push control updates
+  /* ---------- Push control updates ---------- */
+
   useEffect(() => {
-    if (!materialRef.current) return;
-    const u = materialRef.current.uniforms;
-    u.scale.value = scale;
-    u.speed.value = speed;
-    u.ax.value = ax;
-    u.ay.value = ay;
-    u.az.value = az;
-    u.aw.value = aw;
-    u.bx.value = bx;
-    u.by.value = by;
-  }, [scale, speed, ax, ay, az, aw, bx, by]);
+    if (!materialRef.current) return
+    const u = materialRef.current.uniforms
+    u.scale.value = scale
+    u.speed.value = speed
+    u.ax.value = ax
+    u.ay.value = ay
+    u.az.value = az
+    u.aw.value = aw
+    u.bx.value = bx
+    u.by.value = by
+  }, [scale, speed, ax, ay, az, aw, bx, by])
 
-  // Resolve content values (fallback to props when no slides)
-  const resolvedTitle = currentSlide?.title ?? title;
-  const resolvedSubtitle = currentSlide?.subtitle ?? subtitle;
-  const resolvedImageSrc = currentSlide?.imageSrc ?? "/city.png";
-  const resolvedVideoSrc = currentSlide?.videoSrc ?? "/videos/video.mp4";
-  const resolvedQrSrc = currentSlide?.qrSrc ?? "/qr/Xcited_Timeline-QR_Code.png";
+  /* ---------- Resolve content from slide/main props ---------- */
+
+  const resolvedTitle = currentSlide?.title ?? title
+  const resolvedSubtitle = currentSlide?.subtitle ?? subtitle
+  const resolvedImageSrc = currentSlide?.imageSrc ?? "/city.png"
+  const resolvedVideoSrc = currentSlide?.videoSrc ?? "/videos/video.mp4"
+  const resolvedQrSrc =
+    currentSlide?.qrSrc ?? "/qr/Xcited_Timeline-QR_Code.png"
 
   return (
     <div
       className={`relative w-full scale-80 h-[80vh] ${className}`}
       style={{ aspectRatio: "16 / 9" }}
     >
-      {/* Beveled frame + canvas */}
+      {/* Beveled frame + shader canvas */}
       <div className="absolute inset-0 rounded-[30px] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
         {isMobile ? (
           <div
@@ -294,61 +304,69 @@ export default function ShaderFrame({
       {/* Border overlay */}
       <div className="absolute inset-[5px] rounded-[20px] overflow-hidden bg-black/85 backdrop-blur-md shadow-[inset_0_0_20px_rgba(0,0,0,0.3)] z-[5] pointer-events-none" />
 
-      {/* Content overlay with image / video / QR / text */}
+      {/* Glass content overlay */}
       <div className="relative z-10 h-full flex items-center justify-center p-6 pointer-events-none">
         <div className="backdrop-blur-2xl bg-black/20 border border-white/10 rounded-3xl shadow-[0_0_60px_rgba(168,85,247,0.3),0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/5 w-full h-full max-w-7xl max-h-[85vh] flex flex-col p-8">
-          <div className="flex flex-col md:flex-row h-full gap-6">
-            {/* Left: Image - fills height */}
-            <div className="w-full md:w-1/4 flex-shrink-0 h-full">
-              <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                <img
-                  src={resolvedImageSrc}
-                  alt="Project preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Middle: Video/QR - fills height and expands */}
-            <div className="flex-1 h-full pointer-events-auto">
-              <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                {resolvedVideoSrc ? (
-                  <video
-                    src={resolvedVideoSrc}
+          {children ? (
+            // Custom layout (Art / Music, etc.)
+            <div className="h-full w-full pointer-events-auto">{children}</div>
+          ) : (
+            // Default 3-column layout
+            <div className="flex flex-col md:flex-row h-full gap-6">
+              {/* Left: Image */}
+              <div className="w-full md:w-1/4 flex-shrink-0 h-full">
+                <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+                  <img
+                    src={resolvedImageSrc}
+                    alt="Project preview"
                     className="w-full h-full object-cover"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
                   />
-                ) : resolvedQrSrc ? (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-black/60 to-black/40 p-12">
-                    <div className="bg-white p-6 rounded-2xl aspect-square max-w-md w-full">
-                      <img
-                        src={resolvedQrSrc}
-                        alt="QR Code"
-                        className="w-full h-full"
-                      />
-                    </div>
-                  </div>
-                ) : null}
+                </div>
               </div>
-            </div>
 
-            {/* Right: Text Content - fills height */}
-            <div className="w-full md:w-1/5 flex-shrink-0 flex flex-col justify-center text-left">
-              <h2 className="text-xl md:text-2xl lg:text-3xl font-bold drop-shadow-lg mb-3">
-                {resolvedTitle}
-              </h2>
-              <p className="opacity-80 text-xs md:text-sm lg:text-base leading-snug drop-shadow">
-                {resolvedSubtitle}
-              </p>
+              {/* Middle: Video / QR */}
+              <div className="flex-1 h-full pointer-events-auto">
+                <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+                  {resolvedVideoSrc ? (
+                    <video
+                      src={resolvedVideoSrc}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                  ) : resolvedQrSrc ? (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-black/60 to-black/40 p-12">
+                      <div className="bg-white p-6 rounded-2xl aspect-square max-w-md w-full">
+                        <img
+                          src={resolvedQrSrc}
+                          alt="QR Code"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Right: Text */}
+              {showText && (
+                <div className="w-full md:w-1/5 flex-shrink-0 flex flex-col justify-center text-left">
+                  <h2 className="text-xl md:text-2xl lg:text-3xl font-bold drop-shadow-lg mb-3">
+                    {resolvedTitle}
+                  </h2>
+                  <p className="opacity-80 text-xs md:text-sm lg:text-base leading-snug drop-shadow">
+                    {resolvedSubtitle}
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Slide navigation (only if > 1 slide) */}
+      {/* Slide navigation (only if slides > 1 and no custom children) */}
       {hasMultipleSlides && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 pointer-events-auto">
           <button
@@ -471,8 +489,10 @@ export default function ShaderFrame({
         }
       `}</style>
     </div>
-  );
+  )
 }
+
+/* ---------- Slider ---------- */
 
 function Slider({
   label,
@@ -482,12 +502,12 @@ function Slider({
   max,
   step,
 }: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min: number;
-  max: number;
-  step: number;
+  label: string
+  value: number
+  onChange: (v: number) => void
+  min: number
+  max: number
+  step: number
 }) {
   return (
     <div className="mb-3">
@@ -505,5 +525,5 @@ function Slider({
         onChange={(e) => onChange(parseFloat(e.target.value))}
       />
     </div>
-  );
+  )
 }

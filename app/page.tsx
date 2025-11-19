@@ -29,6 +29,7 @@ import { onUserClick, onModelClick } from "./events"
 import CanvasBackground from "./components/CanvasBackground"
 import ShaderFrame from "./components/ShaderFrame"
 import SlideshowStack from "./components/SlideshowStack"
+import ArchivePortal from "./components/ArchivePortal"
 import VideoModelTexture from "./components/VideoModelTexture"
 import { sections as sectionData } from "./lib/patterns"
 import PuddleCitySurface from "./components/PuddleCitySurface"
@@ -276,7 +277,7 @@ function Header({ active, onJump, sections }: HeaderProps) {
             textTransform: "uppercase",
           }}
         >
-          Portfolio
+          Debbie Brooks -  Web Augmented Ltd 
         </div>
         <nav>
           <div
@@ -321,7 +322,7 @@ function Header({ active, onJump, sections }: HeaderProps) {
 }
 
 const ACCENTS = [
-  { a: "#78E8FF", b: "#7C5CFF", c: "#FF6BD6" },
+  { a: "#78E8FF", b: "#7C5FF", c: "#FF6BD6" },
   { a: "#00aaff", b: "#44ccff", c: "#0055cc" },
   { a: "#8800cc", b: "#cc00ff", c: "#660099" },
   { a: "#00cc66", b: "#33ff99", c: "#99ff66" },
@@ -329,7 +330,7 @@ const ACCENTS = [
   { a: "#ff3399", b: "#ff66aa", c: "#ff0066" },
 ]
 
-const SECTIONS = ["Landing", ...sectionData.map((s) => s.name)]
+const SECTIONS = ["Graffiti Fun", ...sectionData.map((s) => s.name)]
 
 const colorPalettes: [string, string, string, string][] = SECTIONS.map(
   (_, idx) => {
@@ -378,6 +379,16 @@ const workSlides = [
   },
 ]
 
+// 6 music videos for the Music section
+const musicVideos = [
+  "/videos/music1.mp4",
+  "/videos/music2.mp4",
+  "/videos/music3.mp4",
+  "/videos/music4.mp4",
+  "/videos/music5.mp4",
+  "/videos/music6.mp4",
+]
+
 /* ---------- Page ---------- */
 
 type Phase = "intro" | "main"
@@ -409,7 +420,6 @@ export default function Page() {
   useEffect(() => {
     if (phase !== "intro") return
 
-    // schedule switch to main after INTRO_SECONDS
     const timeout = setTimeout(() => {
       setPhase("main")
     }, INTRO_SECONDS * 1000)
@@ -427,9 +437,7 @@ export default function Page() {
 
     setIntroOpacity(0)
 
-    // quick fade in so text appears almost immediately
     const fadeInId = setTimeout(() => setIntroOpacity(1), 50)
-    // start fading out ~2s before switching to main
     const fadeOutId = setTimeout(
       () => setIntroOpacity(0),
       (INTRO_SECONDS - 2) * 1000
@@ -507,7 +515,6 @@ export default function Page() {
 
   const handleJump = useCallback(
     (i: number) => {
-      // If user clicks navigation during intro, skip straight to main
       if (phase === "intro") {
         setPhase("main")
       }
@@ -520,7 +527,7 @@ export default function Page() {
       url.searchParams.set("pattern", String(i))
       window.history.replaceState({}, "", url)
     },
-    [ids, phase] // <-- add phase here
+    [ids, phase]
   )
 
   useEffect(() => {
@@ -572,7 +579,7 @@ export default function Page() {
         html, body { overscroll-behavior: none; }
       `}</style>
 
-      {/* Intro text scene with countdown (visible during intro phase) */}
+      {/* Intro text scene */}
       <div
         style={{
           position: "fixed",
@@ -653,7 +660,7 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Main landing 3D scene (loads immediately, fades in after intro) */}
+      {/* Main landing 3D scene */}
       <div
         style={{
           position: "fixed",
@@ -740,9 +747,11 @@ export default function Page() {
 
         {sectionData.map((section, idx) => {
           const i = idx + 1
-          const isWorkSection = section.name.toLowerCase() === "work"
-          const isARSection =
-            section.name.toLowerCase() === "showreel"
+          const lowerName = section.name.toLowerCase()
+          const isWorkSection = lowerName === "work"
+          const isARSection = lowerName === "showreel"
+          const isArtSection = lowerName === "art"
+          const isMusicSection = lowerName === "music"
 
           return (
             <section
@@ -768,43 +777,148 @@ export default function Page() {
                     aspectRatio: "16 / 9",
                   }}
                 >
-                  <SlideshowStack slides={workSlides} />
+                  <ArchivePortal />
+                  {/* <SlideshowStack slides={workSlides} /> */}
                 </div>
               ) : isARSection ? (
                 <VideoModelTexture />
+              ) : isArtSection ? (
+                <ShaderFrame
+                  title={section.name}
+                  subtitle={section.text}
+                  colors={
+                    colorPalettes[i] ?? [
+                      "#a855f7",
+                      "#ec4899",
+                      "#8b5cf6",
+                      "#d946ef",
+                    ]
+                  }
+                  showText={false}
+                >
+                  <div className="flex flex-col md:flex-row h-full gap-6 pointer-events-auto">
+                    {/* Left: still image or supporting art */}
+                    <div className="w-full md:w-1/3 flex-shrink-0 h-full">
+                      <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+                        <img
+                          src="/city.png"
+                          alt="Art still"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Center: Facebook iframe video */}
+                    <div className="flex-1 h-full">
+                      <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 flex items-center justify-center">
+                        <iframe
+                          src="https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Fdebbie.brooks.3367%2Fvideos%2F10157338752441791%2F&show_text=false&width=267&t=0"
+                          width="267"
+                          height="476"
+                          style={{ border: "none", overflow: "hidden" }}
+                          scrolling="no"
+                          frameBorder={0}
+                          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </ShaderFrame>
+              ) : isMusicSection ? (
+                 <ShaderFrame
+    title={section.name}
+    subtitle={section.text}
+    colors={
+      colorPalettes[i] ?? [
+        "#22c55e",
+        "#06b6d4",
+        "#4f46e5",
+        "#a855f7",
+      ]
+    }
+    showText={false}
+  >
+    <div className="h-full flex flex-col md:flex-row gap-6 pointer-events-auto">
+      {/* Bandcamp embed */}
+      <div className="w-full md:w-[350px] flex-shrink-0">
+        <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 flex items-center justify-center p-4">
+          <iframe
+            style={{
+              border: 0,
+              width: "100%",
+              height: "470px",
+            }}
+            src="https://bandcamp.com/EmbeddedPlayer/album=3691821394/size=large/bgcol=333333/linkcol=9a64ff/tracklist=false/transparent=true/"
+            seamless
+          >
+            <a href="https://debxox.bandcamp.com/album/14-nonanalgous-tracks-2015-2018">
+              14 nonanalgous tracks 2015-2018 by debx0x
+            </a>
+          </iframe>
+        </div>
+      </div>
+
+      {/* Headline + 6 wide-screen video tiles */}
+      <div className="flex-1 flex flex-col gap-4">
+        {/* Headline text */}
+        <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/60 px-5 py-4">
+          <h2 className="text-lg md:text-xl font-semibold mb-1">
+            debx0x
+          </h2>
+          <p className="text-xs md:text-sm opacity-80 leading-snug">
+            debx0x is my personal music project where I handle everything –
+            production, composition, and all visual content including music
+            videos.
+          </p>
+        </div>
+
+        {/* 6 widescreen tiles */}
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {musicVideos.map((src, idx) => {
+            const hasSrc = !!src
+            return (
+              <div
+                key={idx}
+                className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black/60"
+              >
+                {hasSrc ? (
+                  <video
+                    src={src}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-3">
+                    <div className="mb-2 text-[10px] md:text-xs tracking-[0.2em] uppercase text-white/40">
+                      Video Placeholder
+                    </div>
+                    <div className="h-10 w-16 rounded-md border border-dashed border-white/20" />
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  </ShaderFrame>
               ) : (
                 <ShaderFrame
-                    title={section.name}
-                    subtitle={section.text}
-                    colors={
-                      colorPalettes[i] ?? [
-                        "#a855f7",
-                        "#ec4899",
-                        "#8b5cf6",
-                        "#d946ef",
-                      ]
-                    }
-                    slides={[
-                      {
-                        title: "Intro",
-                        subtitle: "High-level overview of the project.",
-                        imageSrc: "/city.png",
-                        videoSrc: "/videos/intro.mp4",
-                      },
-                      {
-                        title: "Timeline",
-                        subtitle: "Key milestones and phases.",
-                        imageSrc: "/city-timeline.png",
-                        qrSrc: "/qr/Xcited_Timeline-QR_Code.png",
-                      },
-                      {
-                        title: "Impact",
-                        subtitle: "What success looks like.",
-                        imageSrc: "/city-impact.png",
-                        videoSrc: "/videos/impact.mp4",
-                      },
-                    ]}
-                  />
+                  title={section.name}
+                  subtitle={section.text}
+                  colors={
+                    colorPalettes[i] ?? [
+                      "#a855f7",
+                      "#ec4899",
+                      "#8b5cf6",
+                      "#d946ef",
+                    ]
+                  }
+                />
               )}
             </section>
           )
