@@ -36,6 +36,9 @@ import PuddleCitySurface from "./components/PuddleCitySurface"
 import ShootingRain from "./components/ShootingRain"
 import ImageWall from "./components/ImageWall"
 import { SprayCursor3D } from "./components/SprayCursor3D" // if you're using this
+import { CyberpunkSkyline } from "./components/CyberpunkSkyline";
+import CityModel from "./components/CityModel";
+
 
 /* ---------- Floating Particles ---------- */
 
@@ -176,14 +179,21 @@ function LandingScene({
       <fog attach="fog" args={["#000000", 2.5, 9]} />
 
       <Selection>
-        <group position={[-1, 0, 0]}>
+          <group position={[0, 0, -10]}>
+           <CityModel/>
+        </group>
+         <CyberpunkSkyline
+              position={[0, -1, -20]}
+              girlTextureUrl="/videos/girl_pha_v2.png"
+            />
+        <group position={[-1, 0, -0.5]}>
           <BackdropPanel onWallHover={setIsOverWall} />
 
           <FloatingParticlesReactive />
 
           <group scale={1} position={[0, 0, -2]}>
             <ShootingRain />
-            <ImageWall url="/city.png" position={[1, 1.5, 0]} />
+            {/* <ImageWall url="/city.png" position={[1, 1.5, 0]} /> */}
           </group>
 
           <spotLight
@@ -201,7 +211,7 @@ function LandingScene({
             castShadow
           />
 
-          <group scale={1} position={[0, -1, 0]}>
+          <group scale={[2, 1, 1]} position={[1, -1, 0.1]}>
             <PuddleCitySurface puddleScale={0.8} />
           </group>
 
@@ -340,44 +350,44 @@ const colorPalettes: [string, string, string, string][] = SECTIONS.map(
   }
 )
 
-const workSlides = [
-  {
-    image:
-      "https://placehold.co/1920x1080/667eea/ffffff/png?text=Project+1",
-    title: "Innovative AR experiences that transform reality",
-    actions: [
-      { label: "View Project", href: "#" },
-      { label: "Learn More", href: "#" },
-    ],
-  },
-  {
-    image:
-      "https://placehold.co/1920x1080/f093fb/ffffff/png?text=Project+2",
-    title: "Immersive installations bridging physical and digital",
-    actions: [
-      { label: "Explore", href: "#" },
-      { label: "Case Study", href: "#" },
-    ],
-  },
-  {
-    image:
-      "https://placehold.co/1920x1080/4facfe/ffffff/png?text=Project+3",
-    title: "Mixed reality solutions for modern challenges",
-    actions: [
-      { label: "Discover", href: "#" },
-      { label: "Watch Demo", href: "#" },
-    ],
-  },
-  {
-    image:
-      "https://placehold.co/1920x1080/00f2c3/ffffff/png?text=Project+4",
-    title: "Cutting-edge web experiences that captivate",
-    actions: [
-      { label: "See More", href: "#" },
-      { label: "Get Started", href: "#" },
-    ],
-  },
-]
+// const workSlides = [
+//   {
+//     image:
+//       "https://placehold.co/1920x1080/667eea/ffffff/png?text=Project+1",
+//     title: "Innovative AR experiences that transform reality",
+//     actions: [
+//       { label: "View Project", href: "#" },
+//       { label: "Learn More", href: "#" },
+//     ],
+//   },
+//   {
+//     image:
+//       "https://placehold.co/1920x1080/f093fb/ffffff/png?text=Project+2",
+//     title: "Immersive installations bridging physical and digital",
+//     actions: [
+//       { label: "Explore", href: "#" },
+//       { label: "Case Study", href: "#" },
+//     ],
+//   },
+//   {
+//     image:
+//       "https://placehold.co/1920x1080/4facfe/ffffff/png?text=Project+3",
+//     title: "Mixed reality solutions for modern challenges",
+//     actions: [
+//       { label: "Discover", href: "#" },
+//       { label: "Watch Demo", href: "#" },
+//     ],
+//   },
+//   {
+//     image:
+//       "https://placehold.co/1920x1080/00f2c3/ffffff/png?text=Project+4",
+//     title: "Cutting-edge web experiences that captivate",
+//     actions: [
+//       { label: "See More", href: "#" },
+//       { label: "Get Started", href: "#" },
+//     ],
+//   },
+// ]
 
 // 6 music videos for the Music section
 const musicVideos = [
@@ -393,7 +403,7 @@ const musicVideos = [
 
 type Phase = "intro" | "main"
 
-const INTRO_SECONDS = 30
+const INTRO_SECONDS = 5
 
 export default function Page() {
   const [active, setActive] = useState(0)

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useThree, useLoader } from "@react-three/fiber"
 import { Decal, useTexture, useVideoTexture } from "@react-three/drei"
 import { onModelClick, onHoverModel } from "../events"
-
+import { BillboardSkyscraper} from "./BillboardSkyscraper"
 
 type DecalInfo = {
   position: [number, number, number]
@@ -28,6 +28,7 @@ type Props = {
 const DEFAULT_NEON = 0x39ff14
 
 const BackdropPanel: React.FC<Props> = ({
+  
   rotate = true,
   minScale = 0.25,
   maxScale = 0.45,
@@ -37,7 +38,9 @@ const BackdropPanel: React.FC<Props> = ({
   videoUrl = "/videos/video_3.mp4",
   showVideo = true,
   onWallHover,
+
 }) => {
+
   const wallRef = useRef<THREE.Mesh>(null!)
   const { gl } = useThree()
 
@@ -220,21 +223,28 @@ const BackdropPanel: React.FC<Props> = ({
   // const videoPos: [number, number, number] = isMobile ? [0.6, 0.2, -0.85] : [1.2, 0.2, -1.05]
 
   const wallPos: [number, number, number] = [1, 0.2, -1]
-const videoPos: [number, number, number] = [1.2, 0.2, -1.05]
+  const videoPos: [number, number, number] = [1.2, 0.2, -5]
   
   return (
     <group scale={panelScale}>
+
+      <BillboardSkyscraper
+          position={[-5.5, 1, -4]}
+          buildingSize={[1, 8, 1]}
+          billboardSize={[1.5, 1]}
+          girlTextureUrl="/videos/girl_pha_v2.png"
+        />
       {/* Video background plane - behind the wall */}
       {/* {showVideo && videoTexture && (
-        <mesh position={videoPos}>
-          <planeGeometry args={[12, 5]} />
+        <mesh position={[0, 0, -4]} scale={1.5}>
+          <planeGeometry args={[10, 7]} />
           <meshBasicMaterial 
             map={videoTexture} 
             toneMapped={false}
           />
         </mesh>
       )} */}
-
+    
       {/* Main brick wall with decals */}
       <mesh
         ref={wallRef}

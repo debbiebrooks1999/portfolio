@@ -7,7 +7,7 @@ const DEFAULT_SECTIONS = [
   'Home',
   'Showreel',
   'Mixed Reality',
-  'Work', // This is section 4 - will have the SlideshowStack
+  'Work',
   'Art Installations',
   'About',
 ];

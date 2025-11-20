@@ -22,8 +22,8 @@ type Props = {
 
 const CursorSparkle: React.FC<Props> = ({
   enabled = true,
-  cursorImage = '/spray.png', 
-  cursorSize = 100,
+  cursorImage = '', // Add your custom cursor image
+  cursorSize = 32,
   particleColors = [
     '#39ff14', // neon green
     '#00ffff', // cyan
@@ -36,7 +36,7 @@ const CursorSparkle: React.FC<Props> = ({
   const particlesRef = useRef<Particle[]>([])
   const mouseRef = useRef({ x: 0, y: 0 })
   const cursorImgRef = useRef<HTMLImageElement | null>(null)
-  const animationFrameRef = useRef<number | null>(null)
+  const animationFrameRef = useRef<number>()
 
   useEffect(() => {
     if (!enabled) {
@@ -61,9 +61,9 @@ const CursorSparkle: React.FC<Props> = ({
     updateCanvasSize()
 
     // Load cursor image
-    // const img = new Image()
-    // img.src = cursorImage
-    // cursorImgRef.current = img
+    const img = new Image()
+    img.src = cursorImage
+    cursorImgRef.current = img
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY }
@@ -73,7 +73,7 @@ const CursorSparkle: React.FC<Props> = ({
         particlesRef.current.push({
           x: e.clientX + (Math.random() - 0.5) * 10,
           y: e.clientY + (Math.random() - 0.5) * 10,
-          size: Math.random() * 10 + 5,
+          size: Math.random() * 6 + 3,
           opacity: 1,
           vx: (Math.random() - 0.5) * 2,
           vy: (Math.random() - 0.5) * 2 - 1,
@@ -117,32 +117,32 @@ const CursorSparkle: React.FC<Props> = ({
       })
 
       // Draw custom cursor
-      // const { x, y } = mouseRef.current
-      // if (cursorImgRef.current?.complete) {
-      //   ctx.save()
-      //   ctx.shadowBlur = 15
-      //   ctx.shadowColor = particleColors[0]
-      //   ctx.drawImage(
-      //     cursorImgRef.current,
-      //     x - cursorSize / 2,
-      //     y - cursorSize / 2,
-      //     cursorSize,
-      //     cursorSize
-      //   )
-      //   ctx.restore()
-      // } else {
-      //   // Fallback crosshair
-      //   ctx.strokeStyle = particleColors[0]
-      //   ctx.lineWidth = 2
-      //   ctx.shadowBlur = 10
-      //   ctx.shadowColor = particleColors[0]
-      //   ctx.beginPath()
-      //   ctx.moveTo(x - 10, y)
-      //   ctx.lineTo(x + 10, y)
-      //   ctx.moveTo(x, y - 10)
-      //   ctx.lineTo(x, y + 10)
-      //   ctx.stroke()
-      // }
+      const { x, y } = mouseRef.current
+      if (cursorImgRef.current?.complete) {
+        ctx.save()
+        ctx.shadowBlur = 15
+        ctx.shadowColor = particleColors[0]
+        ctx.drawImage(
+          cursorImgRef.current,
+          x - cursorSize / 2,
+          y - cursorSize / 2,
+          cursorSize,
+          cursorSize
+        )
+        ctx.restore()
+      } else {
+        // Fallback crosshair
+        ctx.strokeStyle = particleColors[0]
+        ctx.lineWidth = 2
+        ctx.shadowBlur = 10
+        ctx.shadowColor = particleColors[0]
+        ctx.beginPath()
+        ctx.moveTo(x - 10, y)
+        ctx.lineTo(x + 10, y)
+        ctx.moveTo(x, y - 10)
+        ctx.lineTo(x, y + 10)
+        ctx.stroke()
+      }
 
       animationFrameRef.current = requestAnimationFrame(animate)
     }
