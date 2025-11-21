@@ -164,16 +164,16 @@ export const BillboardSkyscraper: React.FC<BillboardSkyscraperProps> = ({
     tilesY = 16,
     fps = 5, // tweak this to taste
 }) => {
-  // NOTE: this should now be a spritesheet image, not the raw GIF
-const girlTex = useLoader(THREE.TextureLoader, girlTextureUrl);
-girlTex.colorSpace = THREE.SRGBColorSpace;
-girlTex.wrapS = girlTex.wrapT = THREE.ClampToEdgeWrapping;
-girlTex.minFilter = THREE.NearestFilter;
-girlTex.magFilter = THREE.NearestFilter;
+      // NOTE: this should now be a spritesheet image, not the raw GIF
+    const girlTex = useLoader(THREE.TextureLoader, girlTextureUrl);
+    girlTex.colorSpace = THREE.SRGBColorSpace;
+    girlTex.wrapS = girlTex.wrapT = THREE.ClampToEdgeWrapping;
+    girlTex.minFilter = THREE.NearestFilter;
+    girlTex.magFilter = THREE.NearestFilter;
 
-const frameAspect = 832 / 478;
-const computedBillboardSize: [number, number] =
-  billboardSize ?? [4, 4 / frameAspect];
+    const frameAspect = 832 / 478;
+    const computedBillboardSize: [number, number] =
+      billboardSize ?? [4, 4 / frameAspect];
 
 
   // BUILDING MATERIAL

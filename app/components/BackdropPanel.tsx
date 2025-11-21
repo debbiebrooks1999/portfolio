@@ -1,7 +1,7 @@
 // components/BackdropPanel.tsx
 import * as THREE from "three"
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { useThree, useLoader } from "@react-three/fiber"
+import { useThree, useLoader, useFrame } from "@react-three/fiber"
 import { Decal, useTexture, useVideoTexture } from "@react-three/drei"
 import { onModelClick, onHoverModel } from "../events"
 import { BillboardSkyscraper} from "./BillboardSkyscraper"
@@ -23,9 +23,97 @@ type Props = {
   videoUrl?: string
   showVideo?: boolean
   onWallHover?: (hovering: boolean) => void
+  showGirlBillboard?: boolean
+  girlTextureUrl?: string
+  girlBillboardSize?: [number, number]
+  girlBillboardPosition?: [number, number] // x, y offset from wall center
+  girlBillboardZOffset?: number // distance in front of wall (default: 0.1)
+  girlTilesX?: number
+  girlTilesY?: number
+  girlFps?: number
 }
 
 const DEFAULT_NEON = 0x39ff14
+
+// Billboard shader for the animated girl
+const billboardVertexShader = `
+  varying vec2 vUv;
+  varying vec3 vWorldPos;
+
+  void main() {
+    vUv = uv;
+    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+    vWorldPos = worldPos.xyz;
+    gl_Position = projectionMatrix * viewMatrix * worldPos;
+  }
+`
+
+const billboardFragmentShader = `
+  precision highp float;
+
+  uniform sampler2D uGirlTex;
+  uniform float uTime;
+  uniform vec3 uTintA;
+  uniform vec3 uTintB;
+  uniform float uGlow;
+
+  uniform vec2 uGrid;   // tilesX, tilesY
+  uniform float uFps;   // frames per second
+
+  varying vec2 vUv;
+  varying vec3 vWorldPos;
+
+  float hash(vec2 p){
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+  }
+
+  void main() {
+    // --- SPRITESHEET FRAME SELECTION ---
+    float totalFrames = uGrid.x * uGrid.y;
+    float frame = mod(floor(uTime * uFps), totalFrames);
+
+    float fx = mod(frame, uGrid.x);
+    float fy = floor(frame / uGrid.x);
+
+    vec2 cellSize   = 1.0 / uGrid;
+    vec2 cellOrigin = vec2(fx, fy) * cellSize;
+
+    // Local UV inside the frame (0–1), with a tiny margin to avoid edges
+    float margin = 0.002;
+    vec2 localUv = margin + vUv * (1.0 - 2.0 * margin);
+
+    // Map into the correct cell
+    vec2 uv = cellOrigin + localUv * cellSize;
+
+    // Sample once – no UV shifting, so no bleeding between frames
+    vec4 tex = texture2D(uGirlTex, uv);
+    float alpha = tex.a;
+    if (alpha < 0.02) discard;
+
+    vec3 base = tex.rgb;
+
+    // Scanlines (color only)
+    float scan = sin((uv.y + uTime * 0.2) * 500.0) * 0.5 + 0.5;
+    float scanStrength = mix(0.6, 1.4, scan);
+
+    // Column flicker (color only)
+    float colNoise = hash(vec2(floor(vWorldPos.x * 2.0), floor(uTime * 6.0)));
+    float flicker = mix(0.7, 1.3, colNoise);
+
+    // Neon tint
+    float tintMix = 0.5 + 0.5 * sin(uTime + uv.y * 5.0);
+    vec3 tint = mix(uTintA, uTintB, tintMix);
+
+    vec3 color = base * tint * scanStrength * flicker * uGlow;
+
+    // Edge glow
+    float edge = smoothstep(0.0, 0.25, alpha) - smoothstep(0.25, 0.7, alpha);
+    vec3 edgeColor = mix(uTintA, uTintB, 0.5);
+    color += edgeColor * edge * 1.5;
+
+    gl_FragColor = vec4(color, alpha);
+  }
+`
 
 const BackdropPanel: React.FC<Props> = ({
   
@@ -38,6 +126,14 @@ const BackdropPanel: React.FC<Props> = ({
   videoUrl = "/videos/video_3.mp4",
   showVideo = true,
   onWallHover,
+  showGirlBillboard = true,
+  girlTextureUrl = "/videos/girl_pha_v2.png",
+  girlBillboardSize = [1.5, 1.0],
+  girlBillboardPosition = [-1.5, 0.3], // x and y offset from wall center
+  girlBillboardZOffset = 0.1, // distance in front of wall
+  girlTilesX = 5,
+  girlTilesY = 16,
+  girlFps = 5,
 
 }) => {
 
@@ -79,6 +175,46 @@ const BackdropPanel: React.FC<Props> = ({
     }
   }, [videoTexture])
 
+  // Load girl spritesheet texture
+  const girlTex = showGirlBillboard 
+    ? useLoader(THREE.TextureLoader, girlTextureUrl)
+    : null
+
+  useEffect(() => {
+    if (girlTex) {
+      girlTex.colorSpace = THREE.SRGBColorSpace
+      girlTex.wrapS = girlTex.wrapT = THREE.ClampToEdgeWrapping
+      girlTex.minFilter = THREE.NearestFilter
+      girlTex.magFilter = THREE.NearestFilter
+    }
+  }, [girlTex])
+
+  // Billboard material for animated girl
+  const billboardUniforms = useMemo(() => {
+    if (!girlTex) return null
+    return {
+      uGirlTex: { value: girlTex },
+      uTime: { value: 0 },
+      uTintA: { value: new THREE.Color(0x00ffff) },
+      uTintB: { value: new THREE.Color(0xff00ff) },
+      uGlow: { value: 1.8 },
+      uGrid: { value: new THREE.Vector2(girlTilesX, girlTilesY) },
+      uFps: { value: girlFps },
+    }
+  }, [girlTex, girlTilesX, girlTilesY, girlFps])
+
+  const billboardMaterial = useMemo(() => {
+    if (!billboardUniforms) return null
+    return new THREE.ShaderMaterial({
+      uniforms: billboardUniforms,
+      vertexShader: billboardVertexShader,
+      fragmentShader: billboardFragmentShader,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    }) as THREE.ShaderMaterial
+  }, [billboardUniforms])
+
   const decalDiffuse = useLoader(THREE.TextureLoader, "textures/decal/decal-diffuse.png")
   const decalNormal = useLoader(THREE.TextureLoader, "textures/decal/decal-normal.jpg")
   decalDiffuse.colorSpace = THREE.SRGBColorSpace
@@ -104,6 +240,13 @@ const BackdropPanel: React.FC<Props> = ({
       // Don't set cursor here - let the model and wall handle it
     })
   }, [])
+
+  // Update billboard animation time
+  useFrame(({ clock }) => {
+    if (billboardUniforms) {
+      billboardUniforms.uTime.value = clock.getElapsedTime()
+    }
+  })
 
   useEffect(() => {
     const mesh = wallRef.current
@@ -219,31 +362,18 @@ const BackdropPanel: React.FC<Props> = ({
   const { size } = useThree()
   const isMobile = size.width < 640
   const panelScale = isMobile ? 0.75 : 1
-  // const wallPos: [number, number, number] = isMobile ? [0.6, 0.2, -0.8] : [1.2, 0.2, -1]
-  // const videoPos: [number, number, number] = isMobile ? [0.6, 0.2, -0.85] : [1.2, 0.2, -1.05]
 
   const wallPos: [number, number, number] = [1, 0.2, -1]
-  const videoPos: [number, number, number] = [1.2, 0.2, -5]
   
   return (
     <group scale={panelScale}>
 
-      <BillboardSkyscraper
+      {/* <BillboardSkyscraper
           position={[-5.5, 1, -4]}
           buildingSize={[1, 8, 1]}
           billboardSize={[1.5, 1]}
           girlTextureUrl="/videos/girl_pha_v2.png"
-        />
-      {/* Video background plane - behind the wall */}
-      {/* {showVideo && videoTexture && (
-        <mesh position={[0, 0, -4]} scale={1.5}>
-          <planeGeometry args={[10, 7]} />
-          <meshBasicMaterial 
-            map={videoTexture} 
-            toneMapped={false}
-          />
-        </mesh>
-      )} */}
+        /> */}
     
       {/* Main brick wall with decals */}
       <mesh
@@ -295,6 +425,20 @@ const BackdropPanel: React.FC<Props> = ({
 
         {debug && <primitive object={new THREE.AxesHelper(0.25)} />}
       </mesh>
+
+      {/* Animated girl billboard on the wall */}
+      {showGirlBillboard && billboardMaterial && (
+        <mesh
+          position={[
+            wallPos[0] + girlBillboardPosition[0], 
+            wallPos[1] + girlBillboardPosition[1], 
+            wallPos[2] + girlBillboardZOffset
+          ]}
+          material={billboardMaterial}
+        >
+          <planeGeometry args={girlBillboardSize} />
+        </mesh>
+      )}
     </group>
   )
 }
