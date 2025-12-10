@@ -1,7 +1,7 @@
 // components/PuddleCitySurface.tsx
 import * as React from "react"
 import * as THREE from "three"
-import { useFrame } from "@react-three/fiber"
+import { useFrame, useThree } from "@react-three/fiber"
 import { MeshReflectorMaterial } from "@react-three/drei"
 import { EXRLoader } from "three-stdlib"
 
@@ -22,12 +22,21 @@ type PuddleCitySurfaceProps = {
 
   /** 0–1: scale of the puddle plane relative to the asphalt */
   puddleScale?: number
+  
+  /** Show red hover disc */
+  showHoverDisc?: boolean
+  
+  /** Hover disc radius */
+  hoverDiscRadius?: number
+  
+  /** Hover disc color */
+  hoverDiscColor?: string
 }
 
 export default function PuddleCitySurface({
   
   position = [0, -0.45, 1],
-  rotation = [-Math.PI / 2.5, 0, -Math.PI / 2], // Added -Math.PI / 2 for Z-axis
+  rotation = [-Math.PI / 2.5, 0, -Math.PI / 2],
 
   size = [10, 10],
 
@@ -39,9 +48,21 @@ export default function PuddleCitySurface({
   asphaltRoughUrl = "/textures/asphalt_rough.jpg",
 
   asphaltDisplacementScale = 0.05,
-  puddleScale = 0.8, // puddle covers half the asphalt size
+  puddleScale = 0.8,
+  
+  showHoverDisc = false,
+  hoverDiscRadius = 0.3,
+  hoverDiscColor = "#ff0000",
 }: PuddleCitySurfaceProps) {
-  /* ------------- Asphalt textures ------------- */
+  const asphaltRef = React.useRef<THREE.Mesh>(null)
+  const hoverDiscRef = React.useRef<THREE.Mesh>(null)
+  const raycaster = React.useRef(new THREE.Raycaster())
+  const pointer = React.useRef(new THREE.Vector2())
+
+  const { camera, gl, size: viewport } = useThree()
+
+
+  /* ------------- Texture Loading ------------- */
   const asphaltDiffuse = useOptionalTexture(asphaltDiffuseUrl)
   const asphaltDisplacement = useOptionalTexture(asphaltDisplacementUrl)
   const asphaltNormal = useOptionalTexture(asphaltNormalUrl)
@@ -61,7 +82,6 @@ export default function PuddleCitySurface({
     }
   }, [asphaltDiffuse, asphaltDisplacement, asphaltNormal, asphaltRough])
 
-  /* ------------- Water normal ------------- */
   const waterNormal = useOptionalTexture(waterNormalUrl)
 
   React.useMemo(() => {
@@ -70,11 +90,43 @@ export default function PuddleCitySurface({
     waterNormal.repeat.set(6, 6)
   }, [waterNormal])
 
-  // useFrame((_, delta) => {
-  //   if (!waterNormal) return
-  //   waterNormal.offset.x += delta * 0.011
-  //   waterNormal.offset.y += delta * 0.011
-  // })
+
+  // Track mouse movement
+  React.useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      pointer.current.x = (event.clientX / viewport.width) * 2 - 1
+      pointer.current.y = -(event.clientY / viewport.height) * 2 + 1
+    }
+
+    window.addEventListener("pointermove", handlePointerMove)
+    return () => window.removeEventListener("pointermove", handlePointerMove)
+  }, [viewport])
+
+  // Raycast to detect hover and update the disc position
+  useFrame(() => {
+    const yOffset = 1.3 // The required offset to ensure raycasting hits the mesh
+
+    if (!showHoverDisc || !asphaltRef.current || !hoverDiscRef.current) {
+      return
+    }
+
+    raycaster.current.setFromCamera(pointer.current, camera)
+    
+    // Only raycast against the asphalt mesh specifically
+    const intersects = raycaster.current.intersectObject(asphaltRef.current, false)
+
+    if (intersects.length > 0) {
+      const intersectPoint = intersects[0].point
+      
+      // Position the hover disc at intersection point + the Y offset
+      hoverDiscRef.current.position.copy(intersectPoint)
+      hoverDiscRef.current.position.y += yOffset 
+      hoverDiscRef.current.visible = true 
+
+    } else {
+      hoverDiscRef.current.visible = false
+    }
+  })
 
   const puddleWidth = size[0] * puddleScale
   const puddleHeight = size[1] * puddleScale
@@ -82,9 +134,8 @@ export default function PuddleCitySurface({
   return (
     <group position={position}>
       
-      {/* Base asphalt */}
-      <mesh rotation={rotation} receiveShadow>
-        
+      {/* Base asphalt (The original surface) */}
+      <mesh ref={asphaltRef} rotation={rotation} receiveShadow>
         <planeGeometry args={[size[0], size[1], 128, 128]} />
         <meshStandardMaterial
           color={new THREE.Color("#202225")}
@@ -96,32 +147,51 @@ export default function PuddleCitySurface({
           roughness={0.95}
           metalness={0.0}
           envMapIntensity={0.25}
+          // No onBeforeCompile hook here
         />
       </mesh>
 
-      {/* Big obvious reflective puddle in the middle */}
+      {/* Reflective puddle */}
       <mesh
         rotation={rotation}
-        position={[0, 0.03, 0]} // slightly above asphalt
-        renderOrder={1}         // draw on top of asphalt
+        position={[0, 0.03, 0]}
+        renderOrder={1}
       >
         <planeGeometry args={[puddleWidth, puddleHeight]} />
-       <MeshReflectorMaterial
+        <MeshReflectorMaterial
           mirror={1}
-          mixStrength={3}        // Reduced from 5 for subtler effect
-          mixBlur={0.5}          // Reduced from 1 for sharper reflections
-          blur={[50, 100]}       // Much lower - sharp puddle reflections
+          mixStrength={3}
+          mixBlur={0.5}
+          blur={[50, 100]}
           resolution={1024}
-          roughness={0.05}       // Slightly increased for still water
-          depthScale={0.01}      // Reduced
+          roughness={0.05}
+          depthScale={0.01}
           minDepthThreshold={0.8}
           maxDepthThreshold={1.0}
-          color="#2a3f52"        // Darker, more subtle puddle color
+          color="#2a3f52"
           normalMap={waterNormal ?? null}
-          normalScale={new THREE.Vector2(0.15, 0.15)}  // Much smaller - barely any ripples
+          normalScale={new THREE.Vector2(0.15, 0.15)}
           transparent={false}
         />
-              </mesh>
+      </mesh>
+
+      {/* Red hover disc - Now used only for simple position tracking */}
+      {showHoverDisc && (
+        <mesh
+          ref={hoverDiscRef}
+          rotation={rotation}
+          visible={false} 
+          renderOrder={2}
+        >
+          <circleGeometry args={[hoverDiscRadius, 32]} />
+          <meshBasicMaterial
+            color={hoverDiscColor}
+            transparent
+            opacity={0.8}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
     </group>
   )
 }

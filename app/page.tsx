@@ -21,7 +21,10 @@ import { Selection } from "@react-three/postprocessing"
 
 import BackdropPanel from "./components/BackdropPanel"
 import CursorSparkle from "./components/CursorSparkle"
-import WallInstructions from "./components/WallInstructions"
+// import WallInstructions from "./components/WallInstructions"
+
+import TerminalTypewriter from './components/TerminalTypewriter'
+
 
 import ModelLoader from "./components/ModelLoader"
 import ScrambleText, { ScrambleHandle } from "./components/ScrambleText"
@@ -29,7 +32,7 @@ import { onUserClick, onModelClick } from "./events"
 import CanvasBackground from "./components/CanvasBackground"
 import ShaderFrame from "./components/ShaderFrame"
 import SlideshowStack from "./components/SlideshowStack"
-import ArchivePortal from "./components/ArchivePortal"
+// import ArchivePortal from "./components/ArchivePortal"
 import VideoModelTexture from "./components/VideoModelTexture"
 import { sections as sectionData } from "./lib/patterns"
 import PuddleCitySurface from "./components/PuddleCitySurface"
@@ -38,6 +41,17 @@ import ImageWall from "./components/ImageWall"
 import { SprayCursor3D } from "./components/SprayCursor3D"
 import { CyberpunkSkyline } from "./components/CyberpunkSkyline"
 import CityModel from "./components/CityModel"
+import { ArtSlideshow, type ArtSlide } from "./components/ArtSlideshow"
+
+import VoronoiPlantGrowth from "./components/VoronoiPlantGrowth"
+import VoronoiPlantGrowth3D from "./components/VoronoiPlantGrowth3D"
+import ProceduralVineGrowth, { getRandomPointsOnMesh } from "./components/ProceduralVineGrowth"
+
+import { InflationModel } from "./components/InflationModel"
+import { FallingInflation } from "./components/FallingInflation"
+
+import { RoseGardenScene } from "./components/RoseGardenScene"
+
 
 /* ---------- Types ---------- */
 
@@ -54,25 +68,6 @@ type MusicVideo = {
   title: string
 }
 
-type ArtSlide =
-  | {
-      id: number
-      heroSrc: string
-      heroAlt: string
-      kind: "facebook"
-      title: string
-      body: string
-      facebookSrc: string
-    }
-  | {
-      id: number
-      heroSrc: string
-      heroAlt: string
-      kind: "video"
-      title: string
-      body: string
-      videoSrc: string
-    }
 
 /* ---------- Helpers & constants ---------- */
 
@@ -105,6 +100,8 @@ const colorPalettes: [string, string, string, string][] = SECTIONS.map(
   }
 )
 
+
+
 // Music videos (grid + overlay)
 const musicVideos: MusicVideo[] = [
   {
@@ -133,30 +130,36 @@ const musicVideos: MusicVideo[] = [
   },
 ]
 
-// Art section slides: hero + video + text
+
 const artSlides: ArtSlide[] = [
   {
     id: 0,
-    heroSrc: "/city.png",
-    heroAlt: "Graffiti wall – AR demo",
-    kind: "facebook",
-    title: "Graffiti Wall – AR Surface Study",
-    body: "An interactive AR graffiti wall experiment combining WebGL, shaders, and real-time spray interactions.",
-    facebookSrc:
-      "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Fdebbie.brooks.3367%2Fvideos%2F10157338752441791%2F&show_text=false&width=267&t=0",
+    headline: "National Gallery - Sensing The Unseen",
+    subline: "Exploring the intersection of technology and creativity",
+    layout: "triple",
+    image1Src: "/guardian.png",
+    image1Alt: "Graffiti wall – AR demo",
+    image2Src: "/city-alt.png",
+    image2Alt: "Urban environment concept",
+    videoSrc: "/archive/art-process.mp4",
+    title: "National Gallery - Sensing The Unseen",
+    body: "An immersive AR experience bringing art to life through interactive technology and creative exploration.",
   },
   {
     id: 1,
-    heroSrc: "/city-alt.png", // make sure this asset exists or swap it
+    headline: "Crypitc ",
+    subline: "Behind the scenes of digital creation",
+    layout: "facebook",
+    heroSrc: "/city-alt.png",
     heroAlt: "Concept sketches and stills",
-    kind: "video",
+    facebookSrc:
+      "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Fdebbie.brooks.3367%2Fvideos%2F10157338752441791%2F&show_text=false&width=267&t=0",
     title: "Process & Concept Sketches",
-    body: "Behind-the-scenes look at motion studies, concept art, and shader explorations that informed the final wall.",
-    videoSrc: "/videos/art-process.mp4", // make sure this exists or change
+    body: "Behind-the-scenes look at motion studies, concept art, and shader explorations that informed the final work.",
   },
 ]
 
-const INTRO_SECONDS = 5
+const INTRO_SECONDS = 2
 
 /* ---------- Floating Particles ---------- */
 
@@ -242,13 +245,23 @@ function IntroScene() {
             outlineColor="#ff0080"
             outlineOpacity={1}
           >
-            {`Hi! I'm Debbie, a frontend engineer based in Liverpool, UK. Welcome to my corner of the Internet, where I showcase my work, craft, unfinished or imperfect projects, and the many other things I'm exploring.
+              {`Hi! I'm Debbie,I'm a creative technologist with 25 years of experience building immersive digital experiences that push beyond the ordinary. Based in Liverpool and working across the UK, I specialize in WebGL, Three.js, React, and shader programming to create interactive 3D environments, augmented reality, and virtual reality applications.
+
+              My work combines technical depth with creative vision. I've developed VR tourism experiences for Skyline Queenstown and Rotorua, built WebXR applications for Meta Quest, and crafted everything from particle systems to liquid metal shaders. I don't just execute ideas - I solve the complex technical challenges that ambitious projects demand while maintaining aesthetic integrity and performance.
+
+              My background spans advertising, entertainment, and creative technology. I understand how to balance innovation with usability, and I bring both the code skills and the creative thinking to make challenging concepts work in the real world.
+
+              For larger projects, I work with a talented support team including 3D modelers and specialists, allowing me to scale up for comprehensive AR/VR services and complex builds.
+              If you're looking for someone who can transform ambitious ideas into polished, innovative web experiences, let's talk.
+              `}
+
+            {/* {`Hi! I'm Debbie, a frontend engineer based in Liverpool, UK. Welcome to my corner of the Internet, where I showcase my work, craft, unfinished or imperfect projects, and the many other things I'm exploring.
 
             Throughout the past 2 decade, I have worked with many startups building well designed, fast, and delightful user experiences. During this time, I continuously refined my craft by sharpening my eye through the inspiring work of many other creative developers, designers, and 3D artists and working hard on my engineering skills to meet my ever-evolving taste in visual design.
 
             My appetite for learning recently lead me to focus on what I believe is the future of the web: 3D, WebGL, and shaders.
 
-            When not building, I like sharing what I learned on my blog, through interactive experiences and playgrounds. You can also find me running in the streets of NYC or just walking around enjoying a nice cup of coffee.`}
+            When not building, I like sharing what I learned on my blog, through interactive experiences and playgrounds. You can also find me running in the streets of NYC or just walking around enjoying a nice cup of coffee.`} */}
           </Text>
         </group>
       </group>
@@ -342,9 +355,87 @@ function LandingScene({
             color="#ffffff"
             castShadow
           />
-
+          <group position={[1, -1, 1]}>
+            <FallingInflation />
+          </group>
           <group scale={[2, 1, 1]} position={[1, -1, 0.1]}>
-            <PuddleCitySurface puddleScale={0.8} />
+
+              {/* <InflationModel/> */}
+             
+              {/* <ModelLoader
+                  glbUrl="/models/inflation.glb"
+                  position={[0, 0.6, 0]}
+                  rotation={[0, 0, 0]}
+                  scale={0.5}
+                /> */}
+                
+                <PuddleCitySurface />
+                <RoseGardenScene />  {/* Works without ref! */}
+
+             {/* <ProceduralVineGrowth
+                vineCount={25}
+                maxHeight={2.5}
+                growthSpeed={0.9}
+                vineColor="#00ff88"
+                emissiveIntensity={0.5}
+                autoStart={true}
+              /> */}
+     
+
+
+              {/* <VoronoiPlantGrowth
+                position={[0, 1, 0]}
+                rotation={[-Math.PI / 2, 0, 0]}
+                plantColor="#00ff88"        // Green growth
+                baseColor="#1a1a1c"         // Dark asphalt
+                circleRadius={1.5}          // Size of circle
+                circleExpansionSpeed={0.8}  // How fast it expands
+              /> */}
+              {/* <PuddleCitySurface
+                bubbleMode={true}      // Toggle on/off
+                bubbleColor="#0affff"           // Cyan glow for cyberpunk
+                bubbleEmissive={0.4}            // Emissive intensity
+                bubbleScale={0.1}               // Size adjustment
+                rotation={[-Math.PI / 2, 0, 0]}  // Or adjust rotation
+              /> */}
+                  {/* <VoronoiPlantGrowth3D
+                    position={[0, -0.45, 1]}
+                    rotation={[-Math.PI / 2.5, 0, -Math.PI / 2]}
+                    size={[10, 10]}
+                    plantCount={150}           // Number of plant instances
+                    growthSpeed={0.5}          // Growth animation speed
+                    plantColor="#00ff88"       // Green plants
+                    crackColor="#0affff"       // Cyan glowing cracks
+                    emissiveIntensity={0.4}    // Glow strength
+                    showCracks={true}          // Show Voronoi crack pattern
+                  /> */}
+
+                {/* <VoronoiPlantGrowth
+                    position={[0, -1, 1]}
+                    rotation={[-Math.PI / 2.5, 0, -Math.PI / 2]}
+                    size={[10, 10]}
+                    growthIntensity={0.7}     // 0-1, how much plant growth
+                    growthSpeed={0.3}          // Animation speed
+                    crackColor="red"       // Cyan cracks (cyberpunk)
+                    plantColor="#00ff88"       // Green plants
+                    glowIntensity={0.8}        // Emissive glow
+                /> */}
+
+          
+               {/* <VoronoiPlantGrowth3D
+        position={[0, -0.45, 1]}
+        rotation={[-Math.PI / 2.5, 0, -Math.PI / 2]}
+        size={[10, 10]}
+        plantCount={150}           // Number of plant instances
+        growthSpeed={0.5}          // Growth animation speed
+        plantColor="#00ff88"       // Green plants
+        crackColor="#0affff"       // Cyan glowing cracks
+        emissiveIntensity={0.4}    // Glow strength
+        showCracks={true}          // Show Voronoi crack pattern
+      /> */}
+
+
+
           </group>
 
           <group scale={1.2} position={[1, 0.2, 0]}>
@@ -356,14 +447,14 @@ function LandingScene({
               fontSize={0.45}
             />
           </group>
-
-          <ModelLoader
-            glbUrl="/models/gyro.glb"
-            position={[3, 0.6, 0]}
-            rotation={[Math.PI / 2, 0, 0]}
-            scale={0.001}
-          />
-        </group>
+         
+            <ModelLoader
+              glbUrl="/models/gyro.glb"
+              position={[3, 0.6, 0]}
+              rotation={[Math.PI / 2, 0, 0]}
+              scale={0.001}
+            />
+          </group>
       </Selection>
 
       <Preload all />
@@ -457,7 +548,7 @@ export default function Page() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isOverWall, setIsOverWall] = useState(false)
   const [showInstructions, setShowInstructions] = useState(true)
-
+  const [bubbleActive, setBubbleActive] = useState(false)
   const [phase, setPhase] = useState<Phase>("intro")
   const [introOpacity, setIntroOpacity] = useState(0)
   const [introSecondsLeft, setIntroSecondsLeft] =
@@ -765,10 +856,10 @@ export default function Page() {
 
         <CursorSparkle enabled={isOverWall} />
 
-        <WallInstructions
+        {/* <WallInstructions
           show={showInstructions}
           onDismiss={() => setShowInstructions(false)}
-        />
+        /> */}
       </div>
 
       {/* Background for later sections */}
@@ -839,161 +930,38 @@ export default function Page() {
                   aspectRatio: "16 / 9",
                 }}
               >
-                <ArchivePortal />
-                {/* <SlideshowStack slides={workSlides} /> */}
+                {/* <ArchivePortal /> */}
               </div>
             )
           } else if (isARSection) {
             content = <VideoModelTexture />
           } else if (isArtSection) {
-            const totalArtSlides = artSlides.length
-            const currentArtSlide =
-              artSlides[slide % totalArtSlides]
-
-            const goPrev = () =>
-              setSlide(
-                (prev) => (prev - 1 + totalArtSlides) % totalArtSlides
-              )
-            const goNext = () =>
-              setSlide((prev) => (prev + 1) % totalArtSlides)
-
-            content = (
-              <ShaderFrame
+            <ShaderFrame
                 title={section.name}
                 subtitle={section.text}
                 colors={
                   colorPalettes[i] ?? [
+                    "#22c55e",
+                    "#06b6d4",
+                    "#4f46e5",
                     "#a855f7",
-                    "#ec4899",
-                    "#8b5cf6",
-                    "#d946ef",
                   ]
                 }
                 showText={false}
               >
-                {/* Outer layout: big arrows outside the inner frame */}
-                <div className="flex items-center gap-6 h-full pointer-events-auto">
-                  {/* Left Arrow – outside frame, bigger */}
-                  <button
-                    onClick={goPrev}
-                    className="
-                      hidden md:flex
-                      items-center justify-center
-                      rounded-full border border-white/40 bg-black/60
-                      hover:bg-black/80 hover:scale-105
-                      transition-transform transition-colors
-                      w-14 h-14 text-3xl
-                      shrink-0
-                    "
-                  >
-                    ‹
-                  </button>
 
-                  {/* Mobile-friendly small arrow above content */}
-                  <button
-                    onClick={goPrev}
-                    className="
-                      md:hidden
-                      absolute left-4 top-4 z-10
-                      rounded-full bg-black/70 px-3 py-2 text-lg
-                    "
-                  >
-                    ‹
-                  </button>
-
-                  {/* Inner framed content */}
-                  <div className="flex-1 flex flex-col md:flex-row h-full gap-6">
-                    {/* Left: hero image, changes per slide */}
-                    <div className="w-full md:w-1/3 flex-shrink-0 h-full">
-                      <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                        <img
-                          src={currentArtSlide.heroSrc}
-                          alt={currentArtSlide.heroAlt}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Right: video + text block */}
-                    <div className="flex-1 h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 flex flex-col md:flex-row">
-                      {/* Video / embed */}
-                      <div className="flex-1 flex items-center justify-center p-4">
-                        {currentArtSlide.kind === "facebook" && (
-                          <iframe
-                            src={currentArtSlide.facebookSrc}
-                            width="267"
-                            height="476"
-                            style={{
-                              border: "none",
-                              overflow: "hidden",
-                            }}
-                            scrolling="no"
-                            frameBorder={0}
-                            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                            allowFullScreen
-                          />
-                        )}
-
-                        {currentArtSlide.kind === "video" &&
-                          "videoSrc" in currentArtSlide && (
-                            <video
-                              src={currentArtSlide.videoSrc}
-                              className="w-full h-full object-cover"
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
-                            />
-                          )}
-                      </div>
-
-                      {/* Text content */}
-                      <div className="w-full md:w-1/3 border-t md:border-t-0 md:border-l border-white/10 p-5 flex flex-col justify-center">
-                        <h2 className="text-xl md:text-2xl font-semibold mb-3 text-white">
-                          {currentArtSlide.title}
-                        </h2>
-                        <p className="text-sm md:text-base text-white/80 leading-relaxed">
-                          {currentArtSlide.body}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Arrow – outside frame, bigger */}
-                  <button
-                    onClick={goNext}
-                    className="
-                      hidden md:flex
-                      items-center justify-center
-                      rounded-full border border-white/40 bg-black/60
-                      hover:bg-black/80 hover:scale-105
-                      transition-transform transition-colors
-                      w-14 h-14 text-3xl
-                      shrink-0
-                    "
-                  >
-                    ›
-                  </button>
-
-                  {/* Mobile-friendly small arrow above content */}
-                  <button
-                    onClick={goNext}
-                    className="
-                      md:hidden
-                      absolute right-4 top-4 z-10
-                      rounded-full bg-black/70 px-3 py-2 text-lg
-                    "
-                  >
-                    ›
-                  </button>
-                </div>
-
-                {/* Slide Indicator Below Full Layout */}
-                <div className="w-full text-center mt-6 text-sm tracking-[0.2em] uppercase text-white/60">
-                  Slide {currentArtSlide.id + 1} / {totalArtSlides}
-                </div>
-              </ShaderFrame>
-            )
+           if (section.name === "Art") {
+              content = (
+                <ArtSlideshow
+                  sectionName={section.name}
+                  sectionText={section.text}
+                  colors={colorPalettes[i] ?? ["#a855f7", "#ec4899", "#8b5cf6", "#d946ef"]}
+                  slides={artSlides}
+                />
+              )
+            }
+             </ShaderFrame>
+          
           } else if (isMusicSection) {
             content = (
               <ShaderFrame
@@ -1011,7 +979,8 @@ export default function Page() {
               >
                 <div className="h-full flex flex-col md:flex-row gap-6 pointer-events-auto">
                   {/* Bandcamp embed */}
-                  <div className="w-full md:w-[350px] flex-shrink-0">
+
+                  {/* <div className="w-full md:w-[350px] flex-shrink-0">
                     <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 flex items-center justify-center p-4">
                       <iframe
                         style={{
@@ -1027,7 +996,7 @@ export default function Page() {
                         </a>
                       </iframe>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Headline + 6 wide-screen video tiles */}
                   <div className="flex-1 flex flex-col gap-4">

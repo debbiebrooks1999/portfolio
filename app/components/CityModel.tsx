@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
 
-export default function CityModel(props: any) {
+export default function ModelLoader(props: any) {
   const group = useRef();
   const { scene, animations } = useGLTF("./models/city_v2.glb");
   const { actions } = useAnimations(animations, group);

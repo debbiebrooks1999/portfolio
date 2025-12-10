@@ -1,10 +1,16 @@
 // components/BackdropPanel.tsx
+
 import * as THREE from "three"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useThree, useLoader, useFrame } from "@react-three/fiber"
 import { Decal, useTexture, useVideoTexture } from "@react-three/drei"
 import { onModelClick, onHoverModel } from "../events"
 import { BillboardSkyscraper} from "./BillboardSkyscraper"
+import GenericModelLoader from "./GenericModelLoader"
+import { PCDModel } from "./PCDModel";
+import SteamToCylinder from "./SteamToCylinder"
+
+import { RoseGardenScene } from "./RoseGardenScene"
 
 type DecalInfo = {
   position: [number, number, number]
@@ -34,6 +40,89 @@ type Props = {
 }
 
 const DEFAULT_NEON = 0x39ff14
+const MANHOLE_POSITION: [number, number, number] = [-2, -0.7, 0.1]
+const HYDRANT_POSITION: [number, number, number] = [3.9, -1, 0]
+const degToRad = (deg: number) => (deg * Math.PI) / 180
+
+type WaterBubblesProps = {
+  count?: number
+  spread?: number
+  riseHeight?: number
+  baseSpeed?: number
+  size?: number
+  color?: string | number
+}
+
+const WaterBubbles: React.FC<WaterBubblesProps> = ({
+  count = 120,
+  spread = 0.4,
+  riseHeight = 2.5,
+  baseSpeed = 0.7,
+  size = 0.05,
+  color = 0x9fe7ff,
+}) => {
+  const pointsRef = useRef<THREE.Points>(null)
+
+  const bubbleData = useMemo(() => {
+    const positions = new Float32Array(count * 3)
+    const speeds = new Float32Array(count)
+    const sway = new Float32Array(count)
+
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3
+      positions[i3] = (Math.random() - 0.5) * spread * 2
+      positions[i3 + 1] = Math.random() * 0.2
+      positions[i3 + 2] = (Math.random() - 0.5) * spread
+      speeds[i] = baseSpeed * (0.5 + Math.random())
+      sway[i] = Math.random() * Math.PI * 2
+    }
+
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3))
+
+    return { geometry, positions, speeds, sway }
+  }, [count, spread, baseSpeed])
+
+  const material = useMemo(
+    () =>
+      new THREE.PointsMaterial({
+        color,
+        size,
+        transparent: true,
+        opacity: 0.8,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true,
+      }),
+    [color, size]
+  )
+
+  useFrame((state, delta) => {
+    const elapsed = state.clock.getElapsedTime()
+    const { geometry, positions, speeds, sway } = bubbleData
+
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3
+      positions[i3 + 1] += speeds[i] * delta
+      positions[i3] += Math.sin(elapsed * 1.5 + sway[i]) * delta * 0.2
+      positions[i3 + 2] += Math.cos(elapsed * 1.2 + sway[i]) * delta * 0.15
+
+      if (positions[i3 + 1] > riseHeight) {
+        positions[i3] = (Math.random() - 0.5) * spread * 2
+        positions[i3 + 1] = 0
+        positions[i3 + 2] = (Math.random() - 0.5) * spread
+        speeds[i] = baseSpeed * (0.5 + Math.random())
+        sway[i] = Math.random() * Math.PI * 2
+      }
+    }
+
+    geometry.attributes.position.needsUpdate = true
+    material.opacity = 0.75 + Math.sin(elapsed * 3) * 0.08
+  })
+
+  return <points ref={pointsRef} geometry={bubbleData.geometry} material={material} frustumCulled={false} />
+}
+
 
 // Billboard shader for the animated girl
 const billboardVertexShader = `
@@ -139,6 +228,7 @@ const BackdropPanel: React.FC<Props> = ({
 
   const wallRef = useRef<THREE.Mesh>(null!)
   const { gl } = useThree()
+  const manholeRef = useRef<THREE.Group>(null)
 
   const hoveringModelRef = useRef(false)
   const neonColorRef = useRef<number>(DEFAULT_NEON)
@@ -242,9 +332,13 @@ const BackdropPanel: React.FC<Props> = ({
   }, [])
 
   // Update billboard animation time
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     if (billboardUniforms) {
       billboardUniforms.uTime.value = clock.getElapsedTime()
+    }
+    if (manholeRef.current) {
+      manholeRef.current.rotation.y += delta * 2.4
+      manholeRef.current.rotation.x = Math.sin(clock.getElapsedTime() * 1.2) * 0.05
     }
   })
 
@@ -439,7 +533,63 @@ const BackdropPanel: React.FC<Props> = ({
           <planeGeometry args={girlBillboardSize} />
         </mesh>
       )}
+
+      <RoseGardenScene />
+
+      {/* PCD girl emerging above the manhole
+      <group position={[MANHOLE_POSITION[0], MANHOLE_POSITION[1] + 0.6, MANHOLE_POSITION[2] + 0.05]}>
+        <PCDModel
+          url="/girl.pcd"     
+          pointSize={0.008}
+          color="#dfe7ff"
+          scale={[2, 1, 1]} 
+          rotation={[Math.PI / 2, Math.PI, degToRad(-90)]}
+        />
+      </group>
+      
+      <group position={[MANHOLE_POSITION[0], MANHOLE_POSITION[1], MANHOLE_POSITION[2]]} ref={manholeRef}>
+        <GenericModelLoader
+          modelPath="/models/Manhole.glb"
+          position={[0, 0, 0]}
+          rotation={[0, degToRad(10), 0]}
+          scale={0.7}
+        />
+      </group>
+
+      <group position={[MANHOLE_POSITION[0], MANHOLE_POSITION[1] + 0.1, MANHOLE_POSITION[2]]}>
+        <SteamToCylinder
+          particleCount={1800}
+          transitionDuration={3.5}
+          cylinderRadius={0.9}
+          cylinderHeight={3.5}
+          steamSpread={0.7}
+        />
+      </group> */}
+
+      {/* <group position={HYDRANT_POSITION}>
+        <GenericModelLoader
+          modelPath="/models/Hydrant.glb"
+          position={[0, 0, 0]}
+          rotation={[0, 0, 0]}
+          scale={0.8}
+        />
+        <group position={[0.15, 0.45, -0.05]}>
+          <WaterBubbles count={140} spread={0.3} riseHeight={2} baseSpeed={0.9} size={0.04} />
+        </group>
+      </group> */}
+      
+       {/* 
+       
+        IDEA:: add a mouse over effect that shows fish swimming underneath
+        <GenericModelLoader
+            modelPath="/models/bubbly_surface.glb"
+            position={[0, -0.8, 0]}
+            rotation={[0, 0, 0]}
+            scale={0.3}
+          /> */}
+     
     </group>
+      
   )
 }
 

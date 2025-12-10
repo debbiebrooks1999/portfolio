@@ -52,17 +52,19 @@ const WallInstructions: React.FC<Props> = ({ show, onDismiss }) => {
         userSelect: 'none',
       }}
     >
-      <div style={{ marginBottom: '0.5rem' }}>
-        🎯 Click on the wall to shoot decals
+
+      
+      {/* <div style={{ marginBottom: '0.5rem' }}>
+     
       </div>
       <div style={{ 
         fontSize: '0.85rem', 
         opacity: 0.8,
         color: '#00ffff',
       }}>
-        Click the model to cycle colors
-      </div>
-      <style>{`
+       
+      </div> */}
+      {/* <style>{`
         @keyframes pulse {
           0%, 100% {
             opacity: 1;
@@ -73,8 +75,11 @@ const WallInstructions: React.FC<Props> = ({ show, onDismiss }) => {
             transform: translateX(-50%) translateY(-5px);
           }
         }
-      `}</style>
+      `}</style> */}
+
     </div>
+
+
   )
 }
 
