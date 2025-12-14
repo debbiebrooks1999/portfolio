@@ -16,6 +16,7 @@ import {
   Preload,
   Points,
   PointMaterial,
+  OrbitControls,
 } from "@react-three/drei"
 import { Selection } from "@react-three/postprocessing"
 
@@ -25,33 +26,36 @@ import CursorSparkle from "./components/CursorSparkle"
 
 import TerminalTypewriter from './components/TerminalTypewriter'
 
-
 import ModelLoader from "./components/ModelLoader"
 import ScrambleText, { ScrambleHandle } from "./components/ScrambleText"
 import { onUserClick, onModelClick } from "./events"
 import CanvasBackground from "./components/CanvasBackground"
 import ShaderFrame from "./components/ShaderFrame"
-import SlideshowStack from "./components/SlideshowStack"
+// import SlideshowStack from "./components/SlideshowStack"
 // import ArchivePortal from "./components/ArchivePortal"
 import VideoModelTexture from "./components/VideoModelTexture"
 import { sections as sectionData } from "./lib/patterns"
 import PuddleCitySurface from "./components/PuddleCitySurface"
 import ShootingRain from "./components/ShootingRain"
-import ImageWall from "./components/ImageWall"
+// import ImageWall from "./components/ImageWall"
 import { SprayCursor3D } from "./components/SprayCursor3D"
 import { CyberpunkSkyline } from "./components/CyberpunkSkyline"
 import CityModel from "./components/CityModel"
 import { ArtSlideshow, type ArtSlide } from "./components/ArtSlideshow"
 
-import VoronoiPlantGrowth from "./components/VoronoiPlantGrowth"
-import VoronoiPlantGrowth3D from "./components/VoronoiPlantGrowth3D"
-import ProceduralVineGrowth, { getRandomPointsOnMesh } from "./components/ProceduralVineGrowth"
+// import VoronoiPlantGrowth from "./components/VoronoiPlantGrowth"
+// import VoronoiPlantGrowth3D from "./components/VoronoiPlantGrowth3D"
+// import ProceduralVineGrowth, { getRandomPointsOnMesh } from "./components/ProceduralVineGrowth"
 
-import { InflationModel } from "./components/InflationModel"
-import { FallingInflation } from "./components/FallingInflation"
+// import { InflationModel } from "./components/InflationModel"
+// import { FallingInflation } from "./components/FallingInflation"
 
-import { RoseGardenScene } from "./components/RoseGardenScene"
+// import { RoseGardenScene } from "./components/RoseGardenScene"
 
+import { Manhole, RoseSystem, ManholeState, RoseData } from "./components/ManholeRoseSystem"
+// import { LotusLeaf, LotusFlower } from './components/LotusGarden';
+import { LotusLeaf, LotusFlower } from "./components/LotusComponents"
+import { Stats } from '@react-three/drei'
 
 /* ---------- Types ---------- */
 
@@ -67,7 +71,6 @@ type MusicVideo = {
   src: string
   title: string
 }
-
 
 /* ---------- Helpers & constants ---------- */
 
@@ -100,8 +103,6 @@ const colorPalettes: [string, string, string, string][] = SECTIONS.map(
   }
 )
 
-
-
 // Music videos (grid + overlay)
 const musicVideos: MusicVideo[] = [
   {
@@ -129,7 +130,6 @@ const musicVideos: MusicVideo[] = [
     title: "Midnight Debug",
   },
 ]
-
 
 const artSlides: ArtSlide[] = [
   {
@@ -160,6 +160,104 @@ const artSlides: ArtSlide[] = [
 ]
 
 const INTRO_SECONDS = 2
+
+/* ---------- Camera Controller (Intro Animation + Rotation) ---------- */
+
+function CameraController({ 
+  animStarted,
+  introComplete,
+  setIntroComplete,
+  introProgress,
+  introDuration,
+  introStartZ,
+  introTargetZ,
+  introStartY,
+  introTargetY,
+  targetRotationY, 
+  currentRotationY 
+}: { 
+  animStarted: boolean
+  introComplete: boolean
+  setIntroComplete: (value: boolean) => void
+  introProgress: React.MutableRefObject<number>
+  introDuration: number
+  introStartZ: number
+  introTargetZ: number
+  introStartY: number
+  introTargetY: number
+  targetRotationY: React.MutableRefObject<number>
+  currentRotationY: React.MutableRefObject<number>
+}) {
+  // Easing function for smooth intro animation (ease-out cubic)
+  const easeOutCubic = (t: number): number => {
+    return 1 - Math.pow(1 - t, 3);
+  };
+
+  useFrame(({ camera }, delta) => {
+    // WAITING PHASE - before animation starts
+    if (!animStarted) {
+      // Keep camera at start position during delay
+      camera.position.z = introStartZ;
+      camera.position.y = introStartY;
+      return;
+    }
+
+    // INTRO ANIMATION PHASE
+    if (!introComplete) {
+      introProgress.current += delta;
+      const t = Math.min(introProgress.current / introDuration, 1.0);
+      const easedT = easeOutCubic(t);
+      
+      // Interpolate camera Z position from start to target
+      const currentZ = introStartZ + (introTargetZ - introStartZ) * easedT;
+      camera.position.z = currentZ;
+      // Interpolate camera Y position from start to target
+      const currentY = introStartY + (introTargetY - introStartY) * easedT;
+      camera.position.y = currentY;
+      
+      // Mark intro as complete when done
+      if (t >= 1.0) {
+        setIntroComplete(true);
+        console.log('🎬 Camera intro animation complete');
+      }
+      
+      return; // Skip rotation during intro
+    }
+
+    // ROTATION PHASE (after intro is complete)
+    // Smooth interpolation (lerp) for camera rotation
+    const lerpFactor = 0.05; // Lower = smoother, higher = more responsive
+    currentRotationY.current += (targetRotationY.current - currentRotationY.current) * lerpFactor;
+    
+    // Apply rotation to camera
+    camera.rotation.y = currentRotationY.current;
+  });
+
+  return null;
+}
+
+
+/* ---------- Camera Rotation Controller ---------- */
+
+// function CameraRotation({ 
+//   targetRotationY, 
+//   currentRotationY 
+// }: { 
+//   targetRotationY: React.MutableRefObject<number>
+//   currentRotationY: React.MutableRefObject<number>
+// }) {
+//   useFrame(({ camera }) => {
+//     // Smooth interpolation (lerp) for camera rotation
+//     const lerpFactor = 0.05; // Lower = smoother, higher = more responsive
+//     currentRotationY.current += (targetRotationY.current - currentRotationY.current) * lerpFactor;
+    
+//     // Apply rotation to camera
+//     camera.rotation.y = currentRotationY.current;
+//   });
+
+//   return null;
+// }
+
 
 /* ---------- Floating Particles ---------- */
 
@@ -224,11 +322,11 @@ function FloatingParticlesReactive({ count = 500 }: { count?: number }) {
 function IntroScene() {
   return (
     <>
-      <Environment
+      {/* <Environment
         files="/hdr/studio_small_09_1k.hdr"
         background={false}
         environmentIntensity={1.0}
-      />
+      /> */}
       <fog attach="fog" args={["#000000", 2.5, 9]} />
 
       <group position={[-1, 0, 0]}>
@@ -245,23 +343,15 @@ function IntroScene() {
             outlineColor="#ff0080"
             outlineOpacity={1}
           >
-              {`Hi! I'm Debbie,I'm a creative technologist with 25 years of experience building immersive digital experiences that push beyond the ordinary. Based in Liverpool and working across the UK, I specialize in WebGL, Three.js, React, and shader programming to create interactive 3D environments, augmented reality, and virtual reality applications.
+            {`Hi! I'm Debbie,I'm a creative technologist with 25 years of experience building immersive digital experiences that push beyond the ordinary. Based in Liverpool and working across the UK, I specialize in WebGL, Three.js, React, and shader programming to create interactive 3D environments, augmented reality, and virtual reality applications.
 
-              My work combines technical depth with creative vision. I've developed VR tourism experiences for Skyline Queenstown and Rotorua, built WebXR applications for Meta Quest, and crafted everything from particle systems to liquid metal shaders. I don't just execute ideas - I solve the complex technical challenges that ambitious projects demand while maintaining aesthetic integrity and performance.
+            My work combines technical depth with creative vision. I've developed VR tourism experiences for Skyline Queenstown and Rotorua, built WebXR applications for Meta Quest, and crafted everything from particle systems to liquid metal shaders. I don't just execute ideas - I solve the complex technical challenges that ambitious projects demand while maintaining aesthetic integrity and performance.
 
-              My background spans advertising, entertainment, and creative technology. I understand how to balance innovation with usability, and I bring both the code skills and the creative thinking to make challenging concepts work in the real world.
+            My background spans advertising, entertainment, and creative technology. I understand how to balance innovation with usability, and I bring both the code skills and the creative thinking to make challenging concepts work in the real world.
 
-              For larger projects, I work with a talented support team including 3D modelers and specialists, allowing me to scale up for comprehensive AR/VR services and complex builds.
-              If you're looking for someone who can transform ambitious ideas into polished, innovative web experiences, let's talk.
-              `}
-
-            {/* {`Hi! I'm Debbie, a frontend engineer based in Liverpool, UK. Welcome to my corner of the Internet, where I showcase my work, craft, unfinished or imperfect projects, and the many other things I'm exploring.
-
-            Throughout the past 2 decade, I have worked with many startups building well designed, fast, and delightful user experiences. During this time, I continuously refined my craft by sharpening my eye through the inspiring work of many other creative developers, designers, and 3D artists and working hard on my engineering skills to meet my ever-evolving taste in visual design.
-
-            My appetite for learning recently lead me to focus on what I believe is the future of the web: 3D, WebGL, and shaders.
-
-            When not building, I like sharing what I learned on my blog, through interactive experiences and playgrounds. You can also find me running in the streets of NYC or just walking around enjoying a nice cup of coffee.`} */}
+            For larger projects, I work with a talented support team including 3D modelers and specialists, allowing me to scale up for comprehensive AR/VR services and complex builds.
+            If you're looking for someone who can transform ambitious ideas into polished, innovative web experiences, let's talk.
+            `}
           </Text>
         </group>
       </group>
@@ -282,13 +372,80 @@ function LandingScene({
   const [hasScrambled, setHasScrambled] = useState(false)
   const currentFontRef = useRef("/fonts/Inversionz.ttf")
 
+  // Manhole and Rose state
+  const [manholeState, setManholeState] = useState<ManholeState>('idle');
+  const rosesRef = useRef<RoseData[]>([]);
+  
+  // Lotus flower state management - SINGLE DECLARATION
+  const [flowers, setFlowers] = useState<Array<{ 
+    id: number; 
+    position: [number, number, number]; 
+    parentLeaf: any 
+  }>>([]);
+  const nextFlowerId = useRef(0);
+  const nextId = useRef(0);
+
+
+  // Camera intro animation state
+  const [cameraIntroComplete, setCameraIntroComplete] = useState(false);
+  const [cameraAnimStarted, setCameraAnimStarted] = useState(false);
+  const cameraIntroProgress = useRef(0);
+  const INTRO_SCENE_DELAY = 1000; // 1 second delay (same as scramble)
+  const INTRO_DURATION = 10.0; // 3 seconds
+  const INTRO_START_Z = -50; // Start 50 units back
+  const INTRO_TARGET_Z = 3; // End at current camera position
+  const INTRO_START_Y = 35; // Start 50 units back
+  const INTRO_TARGET_Y = 0; // End at current camera position
+
+
+  // Mouse tracking for camera rotation (only active after intro)
+
+    // Mouse tracking for camera rotation
+  const mouseX = useRef(0);
+  const targetRotationY = useRef(0);
+  const currentRotationY = useRef(0);
+
+  // Lotus event handlers - SINGLE DECLARATION
+  const handleFlowerSpawn = (position: [number, number, number], parentLeaf: any) => {
+    setFlowers(prev => [...prev, { 
+      id: nextFlowerId.current++, 
+      position, 
+      parentLeaf 
+    }]);
+    console.log(`🪷 Spawning lotus flower at (${position[0].toFixed(1)}, ${position[2].toFixed(1)})`);
+  };
+
+  const handleFlowerRemoved = (id: number) => {
+    setFlowers(prev => prev.filter(f => f.id !== id));
+    console.log('✓ Removed lotus flower');
+  };
+
+  // Track mouse movement
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!cameraIntroComplete) return;
+      
+      // Normalize mouse X to -1 to 1
+      mouseX.current = (event.clientX / window.innerWidth) * 2 - 1;
+      // Convert to rotation angle (rotate ±15 degrees)
+      targetRotationY.current = mouseX.current * 0.05; // 0.26 radians ≈ 15 degrees
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [cameraIntroComplete]);
+
+  // Intro scene timer - handles both scramble and camera animation start
   useEffect(() => {
     const timer = setTimeout(() => {
       if (scrambleRef.current && !hasScrambled) {
         scrambleRef.current.scramble()
         setHasScrambled(true)
       }
-    }, 1000)
+      // Start camera animation after delay
+      setCameraAnimStarted(true)
+      console.log('🎬 Starting camera intro animation')
+    }, INTRO_SCENE_DELAY)
     return () => clearTimeout(timer)
   }, [hasScrambled])
 
@@ -307,12 +464,32 @@ function LandingScene({
 
   return (
     <>
-      <Environment
+      {/* <Environment
         files="/hdr/studio_small_09_1k.hdr"
         background={false}
         environmentIntensity={1.0}
-      />
+      /> */}
       <fog attach="fog" args={["#000000", 2.5, 9]} />
+
+      {/* Camera rotation controller */}
+      {/* <CameraRotation 
+        targetRotationY={targetRotationY} 
+        currentRotationY={currentRotationY} 
+      /> */}
+            {/* Camera intro animation and rotation controller */}
+      <CameraController 
+        animStarted={cameraAnimStarted}
+        introComplete={cameraIntroComplete}
+        setIntroComplete={setCameraIntroComplete}
+        introProgress={cameraIntroProgress}
+        introDuration={INTRO_DURATION}
+        introStartZ={INTRO_START_Z}
+        introTargetZ={INTRO_TARGET_Z}
+        introStartY={INTRO_START_Y}
+        introTargetY={INTRO_TARGET_Y}
+        targetRotationY={targetRotationY} 
+        currentRotationY={currentRotationY} 
+      />
 
       <Selection>
         <group position={[0, -3, -4]}>
@@ -338,104 +515,83 @@ function LandingScene({
 
           <group scale={1} position={[0, 0, -2]}>
             <ShootingRain />
-            {/* <ImageWall url="/city.png" position={[1, 1.5, 0]} /> */}
           </group>
 
-          <spotLight
+           <spotLight
             position={[-3, 1.5, 2]}
             intensity={1.15}
             angle={0.6}
             penumbra={0.8}
           />
           <spotLight position={[0, 2, -3.2]} intensity={1.2} color="#ffffff" />
-          <ambientLight intensity={0.4} />
+          <ambientLight intensity={0.01} />
           <directionalLight
             position={[3, 4, 2]}
             intensity={1.75}
             color="#ffffff"
             castShadow
           />
-          <group position={[1, -1, 1]}>
-            <FallingInflation />
-          </group>
+
           <group scale={[2, 1, 1]} position={[1, -1, 0.1]}>
+            <PuddleCitySurface />
 
-              {/* <InflationModel/> */}
-             
-              {/* <ModelLoader
-                  glbUrl="/models/inflation.glb"
-                  position={[0, 0.6, 0]}
-                  rotation={[0, 0, 0]}
-                  scale={0.5}
-                /> */}
-                
-                <PuddleCitySurface />
-                <RoseGardenScene />  {/* Works without ref! */}
+            {/* Manhole, Roses, and Lotus Garden */}
+            <group 
+              scale={[0.5, 0.5, 0.5]} 
+              position={[0, -0.25, 0.78]}  
+              rotation={[0.349, 0, 0]}
+            >
+              {/* Manhole */}
+              <Manhole 
+                state={manholeState} 
+                onStateChange={setManholeState}
+                rosesRef={rosesRef}
+              />
+              
+              {/* Rose System */}
+              <group scale={[0.3, 0.3, 0.3]} position={[0, 0, 0]}>
+                <RoseSystem 
+                  manholeState={manholeState}
+                  rosesRef={rosesRef}
+                />
+              </group>
+              
+              {/* Lotus Garden */}
+              <group scale={[0.1, 0.1, 0.1]} position={[0, 0.1, 0]}>
 
-             {/* <ProceduralVineGrowth
-                vineCount={25}
-                maxHeight={2.5}
-                growthSpeed={0.9}
-                vineColor="#00ff88"
-                emissiveIntensity={0.5}
-                autoStart={true}
-              /> */}
-     
+              <LotusLeaf 
+                position={[-20, 0, 0]} 
+                onFlowerSpawn={(pos, leaf) => {
+                  setFlowers(prev => [...prev, { 
+                    id: nextId.current++, 
+                    position: pos, 
+                    parentLeaf: leaf 
+                  }]);
+                }}
+              />
 
+               <LotusLeaf 
+                position={[20, 0, 0]} 
+                onFlowerSpawn={(pos, leaf) => {
+                  setFlowers(prev => [...prev, { 
+                    id: nextId.current++, 
+                    position: pos, 
+                    parentLeaf: leaf 
+                  }]);
+                }}
+              />
 
-              {/* <VoronoiPlantGrowth
-                position={[0, 1, 0]}
-                rotation={[-Math.PI / 2, 0, 0]}
-                plantColor="#00ff88"        // Green growth
-                baseColor="#1a1a1c"         // Dark asphalt
-                circleRadius={1.5}          // Size of circle
-                circleExpansionSpeed={0.8}  // How fast it expands
-              /> */}
-              {/* <PuddleCitySurface
-                bubbleMode={true}      // Toggle on/off
-                bubbleColor="#0affff"           // Cyan glow for cyberpunk
-                bubbleEmissive={0.4}            // Emissive intensity
-                bubbleScale={0.1}               // Size adjustment
-                rotation={[-Math.PI / 2, 0, 0]}  // Or adjust rotation
-              /> */}
-                  {/* <VoronoiPlantGrowth3D
-                    position={[0, -0.45, 1]}
-                    rotation={[-Math.PI / 2.5, 0, -Math.PI / 2]}
-                    size={[10, 10]}
-                    plantCount={150}           // Number of plant instances
-                    growthSpeed={0.5}          // Growth animation speed
-                    plantColor="#00ff88"       // Green plants
-                    crackColor="#0affff"       // Cyan glowing cracks
-                    emissiveIntensity={0.4}    // Glow strength
-                    showCracks={true}          // Show Voronoi crack pattern
-                  /> */}
+              {flowers.map(f => (
+                <LotusFlower
+                  key={f.id}
+                  position={f.position}
+                  parentLeaf={f.parentLeaf}
+                  onRemoved={() => setFlowers(prev => prev.filter(x => x.id !== f.id))}
+                />
+               ))}
 
-                {/* <VoronoiPlantGrowth
-                    position={[0, -1, 1]}
-                    rotation={[-Math.PI / 2.5, 0, -Math.PI / 2]}
-                    size={[10, 10]}
-                    growthIntensity={0.7}     // 0-1, how much plant growth
-                    growthSpeed={0.3}          // Animation speed
-                    crackColor="red"       // Cyan cracks (cyberpunk)
-                    plantColor="#00ff88"       // Green plants
-                    glowIntensity={0.8}        // Emissive glow
-                /> */}
-
-          
-               {/* <VoronoiPlantGrowth3D
-        position={[0, -0.45, 1]}
-        rotation={[-Math.PI / 2.5, 0, -Math.PI / 2]}
-        size={[10, 10]}
-        plantCount={150}           // Number of plant instances
-        growthSpeed={0.5}          // Growth animation speed
-        plantColor="#00ff88"       // Green plants
-        crackColor="#0affff"       // Cyan glowing cracks
-        emissiveIntensity={0.4}    // Glow strength
-        showCracks={true}          // Show Voronoi crack pattern
-      /> */}
-
-
-
+              </group>
+            </group>
           </group>
 
           <group scale={1.2} position={[1, 0.2, 0]}>
@@ -448,15 +604,23 @@ function LandingScene({
             />
           </group>
          
-            <ModelLoader
-              glbUrl="/models/gyro.glb"
-              position={[3, 0.6, 0]}
-              rotation={[Math.PI / 2, 0, 0]}
-              scale={0.001}
-            />
-          </group>
+          <ModelLoader
+            glbUrl="/models/gyro.glb"
+            position={[3, 0.6, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+            scale={0.001}
+          />
+        </group>
       </Selection>
 
+     {/* Camera Controls */}
+      <OrbitControls 
+        enableDamping 
+        target={[0, 0, 0]}
+        enableRotate={false} // Disable manual rotation to let mouse control it
+        enablePan={false}
+        enabled={cameraIntroComplete} // Disable during intro animation
+      />                             
       <Preload all />
     </>
   )
@@ -767,6 +931,7 @@ export default function Page() {
           shadows={{ type: THREE.PCFSoftShadowMap }}
           style={{ width: "100%", height: "100%" }}
         >
+          <Stats showPanel={0} className="stats" />
           <IntroScene />
         </Canvas>
 
@@ -936,32 +1101,14 @@ export default function Page() {
           } else if (isARSection) {
             content = <VideoModelTexture />
           } else if (isArtSection) {
-            <ShaderFrame
-                title={section.name}
-                subtitle={section.text}
-                colors={
-                  colorPalettes[i] ?? [
-                    "#22c55e",
-                    "#06b6d4",
-                    "#4f46e5",
-                    "#a855f7",
-                  ]
-                }
-                showText={false}
-              >
-
-           if (section.name === "Art") {
-              content = (
-                <ArtSlideshow
-                  sectionName={section.name}
-                  sectionText={section.text}
-                  colors={colorPalettes[i] ?? ["#a855f7", "#ec4899", "#8b5cf6", "#d946ef"]}
-                  slides={artSlides}
-                />
-              )
-            }
-             </ShaderFrame>
-          
+            content = (
+              <ArtSlideshow
+                sectionName={section.name}
+                sectionText={section.text}
+                colors={colorPalettes[i] ?? ["#a855f7", "#ec4899", "#8b5cf6", "#d946ef"]}
+                slides={artSlides}
+              />
+            )
           } else if (isMusicSection) {
             content = (
               <ShaderFrame
@@ -979,24 +1126,19 @@ export default function Page() {
               >
                 <div className="h-full flex flex-col md:flex-row gap-6 pointer-events-auto">
                   {/* Bandcamp embed */}
-
-                  {/* <div className="w-full md:w-[350px] flex-shrink-0">
+                  <div className="w-full md:w-[350px] flex-shrink-0">
                     <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 flex items-center justify-center p-4">
-                      <iframe
+                      <iframe 
+                        src="https://bandcamp.com/EmbeddedPlayer/album=3691821394/size=large/bgcol=333333/linkcol=9a64ff/tracklist=false/transparent=true/"
                         style={{
                           border: 0,
                           width: "100%",
                           height: "470px",
                         }}
-                        src="https://bandcamp.com/EmbeddedPlayer/album=3691821394/size=large/bgcol=333333/linkcol=9a64ff/tracklist=false/transparent=true/"
-                        seamless
-                      >
-                        <a href="https://debxox.bandcamp.com/album/14-nonanalgous-tracks-2015-2018">
-                          14 nonanalgous tracks 2015-2018 by debx0x
-                        </a>
-                      </iframe>
+                        allow="autoplay"
+                      />
                     </div>
-                  </div> */}
+                  </div>
 
                   {/* Headline + 6 wide-screen video tiles */}
                   <div className="flex-1 flex flex-col gap-4">

@@ -1,76 +1,112 @@
-// RoseZoneClickArea.tsx
-import { useState } from 'react'
-import { ThreeEvent } from '@react-three/fiber'
+import { useState, useRef } from 'react'
+import { ThreeEvent, useFrame } from '@react-three/fiber'
+import { useGLTF, Clone } from '@react-three/drei'
 import * as THREE from 'three'
+import { GLTF } from 'three-stdlib'
 import { RoseZone } from './RoseZone'
 
 interface RoseZoneClickAreaProps {
   roseGeometry: THREE.Object3D
   vatTexture: THREE.Texture
-
-  /**
-   * World-space spawn location for the roses and the click object.
-   * Matches RoseZone's { x, z } format.
-   */
   position?: { x: number; z: number }
+  scale?: number
 }
 
+type ManholeGLTF = GLTF & { scene: THREE.Group }
+
 /**
- * A clearly visible click target that toggles a RoseZone animation:
- * - click when OFF  -> roses grow (isActive = true)
- * - click when ON   -> roses reverse (isActive = false)
- *
- * Works alongside the existing mouseover/mouseout approach.
+ * Manhole that:
+ * - On click: toggles between grow/shrink
+ * - Grows: rotates clockwise
+ * - Shrinks: rotates counter-clockwise
  */
 export function RoseZoneClickArea({
   roseGeometry,
   vatTexture,
   position = { x: 0, z: 0 },
+  scale = 1,
 }: RoseZoneClickAreaProps) {
-  const [isActive, setIsActive] = useState(false)
+  const [isActive, setIsActive] = useState(false)       // controls RoseZone direction (true=grow, false=shrink)
+  const [isRotating, setIsRotating] = useState(false)   // whether manhole is currently spinning
+  const [rotationDir, setRotationDir] = useState<1 | -1>(1) // 1=clockwise, -1=counter-clockwise
+  const [isHovered, setIsHovered] = useState(false)
 
-  const CLICK_Y = 0.02
-  const CLICK_RADIUS = 0.6
+  const manholeRef = useRef<THREE.Group>(null)
 
+  const manholeGltf = useGLTF('/models/Manhole.glb') as ManholeGLTF
+
+  // Rotate the manhole while animation is running
+  useFrame((_, delta) => {
+    if (isRotating && manholeRef.current) {
+      const rotationSpeed = 2.0
+      manholeRef.current.rotation.y += rotationDir * rotationSpeed * delta
+    }
+  })
+
+  /**
+   * Click: toggle between grow/shrink
+   */
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
 
-    // 🔁 TOGGLE behavior:
-    // - if currently inactive -> activate (play forward)
-    // - if currently active   -> deactivate (play reverse)
-    setIsActive(prev => !prev)
+    // Only toggle if not currently animating
+    if (!isRotating) {
+      const nextState = !isActive
+      
+      setIsActive(nextState)
+      setRotationDir(nextState ? 1 : -1)  // Clockwise when growing, counter-clockwise when shrinking
+      setIsRotating(true)
+    }
+  }
+
+  const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation()
+    setIsHovered(true)
+  }
+
+  const handlePointerOut = (e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation()
+    setIsHovered(false)
+  }
+
+  /**
+   * Called when RoseZone signals that the current animation is complete
+   */
+  const handleZoneComplete = () => {
+    setIsRotating(false)
   }
 
   return (
     <group>
-      {/* Visible clickable disc */}
-      <mesh
-        position={[position.x, CLICK_Y, position.z]}
+      {/* <group
+        ref={manholeRef}
+        position={[position.x, 0, position.z]}
+        scale={scale}
         onClick={handleClick}
-        castShadow={false}
-        receiveShadow={false}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
       >
-        <cylinderGeometry args={[CLICK_RADIUS, CLICK_RADIUS, 0.04, 32]} />
-        <meshStandardMaterial
-          transparent
-          opacity={0.6}
-          color={isActive ? 'hotpink' : 'white'}
-          emissive={isActive ? 'hotpink' : 'black'}
-        />
-      </mesh>
+        <Clone object={manholeGltf.scene} />
+        
+        {isHovered && !isRotating && (
+          <pointLight
+            position={[0, 0.5, 0]}
+            intensity={2}
+            distance={3}
+            color="#00ffff"
+          />
+        )}
+      </group> */}
 
-      {/* Roses grow/reverse from this same position */}
       <RoseZone
         position={position}
         isActive={isActive}
         roseGeometry={roseGeometry}
         vatTexture={vatTexture}
-        onComplete={() => {
-          // With your current RoseZone, this is used mainly by the hover system.
-          // For toggle-click behavior, we usually keep the zone around, so we
-          // don't remove it here.
-        }}
+        onComplete={handleZoneComplete}
       />
     </group>
   )
 }
+
+useGLTF.preload('/models/Manhole.glb')

@@ -21,5 +21,5 @@ export default function ModelLoader(props: any) {
   return <primitive ref={group} object={scene} {...rest} />;
 }
 
-// Optional: preloading improves performance
+//preloading improves performance
 useGLTF.preload("/models/city_v2.glb");

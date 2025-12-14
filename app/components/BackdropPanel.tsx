@@ -10,7 +10,6 @@ import GenericModelLoader from "./GenericModelLoader"
 import { PCDModel } from "./PCDModel";
 import SteamToCylinder from "./SteamToCylinder"
 
-import { RoseGardenScene } from "./RoseGardenScene"
 
 type DecalInfo = {
   position: [number, number, number]
@@ -534,7 +533,6 @@ const BackdropPanel: React.FC<Props> = ({
         </mesh>
       )}
 
-      <RoseGardenScene />
 
       {/* PCD girl emerging above the manhole
       <group position={[MANHOLE_POSITION[0], MANHOLE_POSITION[1] + 0.6, MANHOLE_POSITION[2] + 0.05]}>

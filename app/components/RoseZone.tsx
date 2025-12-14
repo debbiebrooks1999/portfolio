@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useState, useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { RoseInstance } from './RoseInstance'
 
@@ -9,8 +8,7 @@ interface RoseZoneProps {
   roseGeometry: THREE.Object3D
   vatTexture: THREE.Texture
   onComplete: () => void
-  scaleMultiplier?: number,
-
+  scaleMultiplier?: number
 }
 
 interface RoseData {
@@ -43,7 +41,9 @@ function getRandomScale() {
 
 export function RoseZone({ position, isActive, roseGeometry, vatTexture, onComplete }: RoseZoneProps) {
   const [roses, setRoses] = useState<RoseData[]>([])
-  const [allReversed, setAllReversed] = useState(false)
+  const completedRosesRef = useRef(new Set<string>())
+  const hasNotifiedRef = useRef(false)
+  const totalRosesRef = useRef(0)
 
   // Generate rose positions on mount
   useEffect(() => {
@@ -77,21 +77,26 @@ export function RoseZone({ position, isActive, roseGeometry, vatTexture, onCompl
     }
     
     setRoses(newRoses)
-  }, [])
+    totalRosesRef.current = newRoses.length
+  }, [position.x, position.z])
 
-  // Check if all roses are fully reversed
+  // Reset completion tracking when isActive changes
+  useEffect(() => {
+    completedRosesRef.current.clear()
+    hasNotifiedRef.current = false
+  }, [isActive])
+
+  // Handle when a single rose completes its animation
   const handleRoseUpdate = (id: string, isAtStart: boolean) => {
-    if (!isActive) {
-      const allAtStart = roses.every((_, idx) => {
-        // This is a simplified check - in real implementation,
-        // each rose would report its state
-        return true // Placeholder
-      })
-      
-      if (allAtStart && !allReversed) {
-        setAllReversed(true)
+    completedRosesRef.current.add(id)
+    
+    // Check if all roses have completed
+    if (completedRosesRef.current.size === totalRosesRef.current && !hasNotifiedRef.current) {
+      hasNotifiedRef.current = true
+      // Small delay to ensure all state updates are complete
+      setTimeout(() => {
         onComplete()
-      }
+      }, 50)
     }
   }
 
