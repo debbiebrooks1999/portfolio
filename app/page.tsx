@@ -12,7 +12,6 @@ import * as THREE from "three"
 import { Canvas, useFrame } from "@react-three/fiber"
 import {
   Environment,
-  Text,
   Preload,
   Points,
   PointMaterial,
@@ -22,40 +21,42 @@ import { Selection } from "@react-three/postprocessing"
 
 import BackdropPanel from "./components/BackdropPanel"
 import CursorSparkle from "./components/CursorSparkle"
-// import WallInstructions from "./components/WallInstructions"
-
-import TerminalTypewriter from './components/TerminalTypewriter'
-
 import ModelLoader from "./components/ModelLoader"
+import TerminalTypewriter from './components/TerminalTypewriter'
 import ScrambleText, { ScrambleHandle } from "./components/ScrambleText"
 import { onUserClick, onModelClick } from "./events"
 import CanvasBackground from "./components/CanvasBackground"
 import ShaderFrame from "./components/ShaderFrame"
-// import SlideshowStack from "./components/SlideshowStack"
-// import ArchivePortal from "./components/ArchivePortal"
+import ArchivePortal from "./components/ArchivePortal"
 import VideoModelTexture from "./components/VideoModelTexture"
 import { sections as sectionData } from "./lib/patterns"
 import PuddleCitySurface from "./components/PuddleCitySurface"
 import ShootingRain from "./components/ShootingRain"
-// import ImageWall from "./components/ImageWall"
 import { SprayCursor3D } from "./components/SprayCursor3D"
 import { CyberpunkSkyline } from "./components/CyberpunkSkyline"
 import CityModel from "./components/CityModel"
 import { ArtSlideshow, type ArtSlide } from "./components/ArtSlideshow"
-
-// import VoronoiPlantGrowth from "./components/VoronoiPlantGrowth"
-// import VoronoiPlantGrowth3D from "./components/VoronoiPlantGrowth3D"
-// import ProceduralVineGrowth, { getRandomPointsOnMesh } from "./components/ProceduralVineGrowth"
-
-// import { InflationModel } from "./components/InflationModel"
-// import { FallingInflation } from "./components/FallingInflation"
-
-// import { RoseGardenScene } from "./components/RoseGardenScene"
-
 import { Manhole, RoseSystem, ManholeState, RoseData } from "./components/ManholeRoseSystem"
-// import { LotusLeaf, LotusFlower } from './components/LotusGarden';
 import { LotusLeaf, LotusFlower } from "./components/LotusComponents"
-import { Stats } from '@react-three/drei'
+import EnhancedAbout from "./components/EnhancedAbout"
+import { GLBOverlayLoader } from './components/GLBOverlayLoader'
+import PCModelWithIntro from './components/PCModelWithIntro'
+
+// Import content data
+import {
+  INTRO_SECONDS,
+  CAMERA_CONFIG,
+  ACCENTS,
+  musicVideos,
+  artSlides,
+  BIO_TEXT,
+  MUSIC_CONTENT,
+  slug,
+  generateColorPalettes,
+  type MusicVideo,
+  type ArtSlide as ArtSlideType,
+} from "./content-data"
+
 
 /* ---------- Types ---------- */
 
@@ -67,99 +68,14 @@ type HeaderProps = {
 
 type Phase = "intro" | "main"
 
-type MusicVideo = {
-  src: string
-  title: string
-}
-
-/* ---------- Helpers & constants ---------- */
-
-const slug = (s: string) =>
-  s
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-
-const ACCENTS = [
-  { a: "#78E8FF", b: "#7C5FF", c: "#FF6BD6" },
-  { a: "#00aaff", b: "#44ccff", c: "#0055cc" },
-  { a: "#8800cc", b: "#cc00ff", c: "#660099" },
-  { a: "#00cc66", b: "#33ff99", c: "#99ff66" },
-  { a: "#ff9900", b: "#ffcc33", c: "#ff6600" },
-  { a: "#ff3399", b: "#ff66aa", c: "#ff0066" },
-]
+/* ---------- Constants ---------- */
 
 const SECTIONS = [
   "Graffiti Fun - Interactive Surface Study",
   ...sectionData.map((s) => s.name),
 ]
 
-const colorPalettes: [string, string, string, string][] = SECTIONS.map(
-  (_, idx) => {
-    const acc = ACCENTS[idx] ?? ACCENTS[ACCENTS.length - 1]
-    const { a, b, c } = acc
-    return [a, b, c, b]
-  }
-)
-
-// Music videos (grid + overlay)
-const musicVideos: MusicVideo[] = [
-  {
-    src: "/videos/music1.mp4",
-    title: "Neon Drift",
-  },
-  {
-    src: "/videos/music2.mp4",
-    title: "Rain City Loops",
-  },
-  {
-    src: "/videos/music3.mp4",
-    title: "Glitch Bloom",
-  },
-  {
-    src: "/videos/music4.mp4",
-    title: "Analog Ghosts",
-  },
-  {
-    src: "/videos/music5.mp4",
-    title: "Chromatic Pulse",
-  },
-  {
-    src: "/videos/music6.mp4",
-    title: "Midnight Debug",
-  },
-]
-
-const artSlides: ArtSlide[] = [
-  {
-    id: 0,
-    headline: "National Gallery - Sensing The Unseen",
-    subline: "Exploring the intersection of technology and creativity",
-    layout: "triple",
-    image1Src: "/guardian.png",
-    image1Alt: "Graffiti wall – AR demo",
-    image2Src: "/city-alt.png",
-    image2Alt: "Urban environment concept",
-    videoSrc: "/archive/art-process.mp4",
-    title: "National Gallery - Sensing The Unseen",
-    body: "An immersive AR experience bringing art to life through interactive technology and creative exploration.",
-  },
-  {
-    id: 1,
-    headline: "Crypitc ",
-    subline: "Behind the scenes of digital creation",
-    layout: "facebook",
-    heroSrc: "/city-alt.png",
-    heroAlt: "Concept sketches and stills",
-    facebookSrc:
-      "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Fdebbie.brooks.3367%2Fvideos%2F10157338752441791%2F&show_text=false&width=267&t=0",
-    title: "Process & Concept Sketches",
-    body: "Behind-the-scenes look at motion studies, concept art, and shader explorations that informed the final work.",
-  },
-]
-
-const INTRO_SECONDS = 2
+const colorPalettes = generateColorPalettes(SECTIONS)
 
 /* ---------- Camera Controller (Intro Animation + Rotation) ---------- */
 
@@ -226,7 +142,7 @@ function CameraController({
 
     // ROTATION PHASE (after intro is complete)
     // Smooth interpolation (lerp) for camera rotation
-    const lerpFactor = 0.05; // Lower = smoother, higher = more responsive
+    const lerpFactor = CAMERA_CONFIG.LERP_FACTOR;
     currentRotationY.current += (targetRotationY.current - currentRotationY.current) * lerpFactor;
     
     // Apply rotation to camera
@@ -235,28 +151,6 @@ function CameraController({
 
   return null;
 }
-
-
-/* ---------- Camera Rotation Controller ---------- */
-
-// function CameraRotation({ 
-//   targetRotationY, 
-//   currentRotationY 
-// }: { 
-//   targetRotationY: React.MutableRefObject<number>
-//   currentRotationY: React.MutableRefObject<number>
-// }) {
-//   useFrame(({ camera }) => {
-//     // Smooth interpolation (lerp) for camera rotation
-//     const lerpFactor = 0.05; // Lower = smoother, higher = more responsive
-//     currentRotationY.current += (targetRotationY.current - currentRotationY.current) * lerpFactor;
-    
-//     // Apply rotation to camera
-//     camera.rotation.y = currentRotationY.current;
-//   });
-
-//   return null;
-// }
 
 
 /* ---------- Floating Particles ---------- */
@@ -317,45 +211,18 @@ function FloatingParticlesReactive({ count = 500 }: { count?: number }) {
   )
 }
 
-/* ---------- Intro Scene (bio text only) ---------- */
+/* ---------- Intro Scene (minimal backdrop) ---------- */
 
 function IntroScene() {
   return (
     <>
-      {/* <Environment
+      <Environment
         files="/hdr/studio_small_09_1k.hdr"
         background={false}
-        environmentIntensity={1.0}
-      /> */}
-      <fog attach="fog" args={["#000000", 2.5, 9]} />
-
-      <group position={[-1, 0, 0]}>
-        <group position={[1.4, -0.1, 2.5]}>
-          <Text
-            position={[0, 0.1, 0]}
-            fontSize={0.015}
-            font="/fonts/Inter.ttf"
-            color="#ffffff"
-            anchorX="right"
-            anchorY="middle"
-            maxWidth={0.75}
-            lineHeight={1.1}
-            outlineColor="#ff0080"
-            outlineOpacity={1}
-          >
-            {`Hi! I'm Debbie,I'm a creative technologist with 25 years of experience building immersive digital experiences that push beyond the ordinary. Based in Liverpool and working across the UK, I specialize in WebGL, Three.js, React, and shader programming to create interactive 3D environments, augmented reality, and virtual reality applications.
-
-            My work combines technical depth with creative vision. I've developed VR tourism experiences for Skyline Queenstown and Rotorua, built WebXR applications for Meta Quest, and crafted everything from particle systems to liquid metal shaders. I don't just execute ideas - I solve the complex technical challenges that ambitious projects demand while maintaining aesthetic integrity and performance.
-
-            My background spans advertising, entertainment, and creative technology. I understand how to balance innovation with usability, and I bring both the code skills and the creative thinking to make challenging concepts work in the real world.
-
-            For larger projects, I work with a talented support team including 3D modelers and specialists, allowing me to scale up for comprehensive AR/VR services and complex builds.
-            If you're looking for someone who can transform ambitious ideas into polished, innovative web experiences, let's talk.
-            `}
-          </Text>
-        </group>
-      </group>
-
+        environmentIntensity={0.3}
+      />
+      <fog attach="fog" args={["#000000", 2.5, 12]} />
+      <ambientLight intensity={0.2} />
       <Preload all />
     </>
   )
@@ -390,17 +257,8 @@ function LandingScene({
   const [cameraIntroComplete, setCameraIntroComplete] = useState(false);
   const [cameraAnimStarted, setCameraAnimStarted] = useState(false);
   const cameraIntroProgress = useRef(0);
-  const INTRO_SCENE_DELAY = 1000; // 1 second delay (same as scramble)
-  const INTRO_DURATION = 10.0; // 3 seconds
-  const INTRO_START_Z = -50; // Start 50 units back
-  const INTRO_TARGET_Z = 3; // End at current camera position
-  const INTRO_START_Y = 35; // Start 50 units back
-  const INTRO_TARGET_Y = 0; // End at current camera position
-
 
   // Mouse tracking for camera rotation (only active after intro)
-
-    // Mouse tracking for camera rotation
   const mouseX = useRef(0);
   const targetRotationY = useRef(0);
   const currentRotationY = useRef(0);
@@ -428,7 +286,7 @@ function LandingScene({
       // Normalize mouse X to -1 to 1
       mouseX.current = (event.clientX / window.innerWidth) * 2 - 1;
       // Convert to rotation angle (rotate ±15 degrees)
-      targetRotationY.current = mouseX.current * 0.05; // 0.26 radians ≈ 15 degrees
+      targetRotationY.current = mouseX.current * CAMERA_CONFIG.ROTATION_AMOUNT;
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -445,7 +303,7 @@ function LandingScene({
       // Start camera animation after delay
       setCameraAnimStarted(true)
       console.log('🎬 Starting camera intro animation')
-    }, INTRO_SCENE_DELAY)
+    }, CAMERA_CONFIG.INTRO_SCENE_DELAY)
     return () => clearTimeout(timer)
   }, [hasScrambled])
 
@@ -464,29 +322,24 @@ function LandingScene({
 
   return (
     <>
-      {/* <Environment
+      <Environment
         files="/hdr/studio_small_09_1k.hdr"
         background={false}
         environmentIntensity={1.0}
-      /> */}
+      />
       <fog attach="fog" args={["#000000", 2.5, 9]} />
 
-      {/* Camera rotation controller */}
-      {/* <CameraRotation 
-        targetRotationY={targetRotationY} 
-        currentRotationY={currentRotationY} 
-      /> */}
-            {/* Camera intro animation and rotation controller */}
+      {/* Camera intro animation and rotation controller */}
       <CameraController 
         animStarted={cameraAnimStarted}
         introComplete={cameraIntroComplete}
         setIntroComplete={setCameraIntroComplete}
         introProgress={cameraIntroProgress}
-        introDuration={INTRO_DURATION}
-        introStartZ={INTRO_START_Z}
-        introTargetZ={INTRO_TARGET_Z}
-        introStartY={INTRO_START_Y}
-        introTargetY={INTRO_TARGET_Y}
+        introDuration={CAMERA_CONFIG.INTRO_DURATION}
+        introStartZ={CAMERA_CONFIG.INTRO_START_Z}
+        introTargetZ={CAMERA_CONFIG.INTRO_TARGET_Z}
+        introStartY={CAMERA_CONFIG.INTRO_START_Y}
+        introTargetY={CAMERA_CONFIG.INTRO_TARGET_Y}
         targetRotationY={targetRotationY} 
         currentRotationY={currentRotationY} 
       />
@@ -524,7 +377,7 @@ function LandingScene({
             penumbra={0.8}
           />
           <spotLight position={[0, 2, -3.2]} intensity={1.2} color="#ffffff" />
-          <ambientLight intensity={0.01} />
+          <ambientLight intensity={0.4} />
           <directionalLight
             position={[3, 4, 2]}
             intensity={1.75}
@@ -717,6 +570,9 @@ export default function Page() {
   const [introOpacity, setIntroOpacity] = useState(0)
   const [introSecondsLeft, setIntroSecondsLeft] =
     useState<number>(INTRO_SECONDS)
+
+  const [startIntro, setStartIntro] = useState(false)
+
 
   // Art section slider state
   const [slide, setSlide] = useState(0)
@@ -917,23 +773,36 @@ export default function Page() {
           transition: "opacity 1.5s ease-in-out",
         }}
       >
+        {/* <TerminalTypewriter 
+          text={BIO_TEXT}
+          speed={25}
+        /> */}
+     
+        {!startIntro && <GLBOverlayLoader onStart={() => setStartIntro(true)} />}
         <Canvas
-          camera={{ position: [0, 0, 3], fov: 60, near: 0.1, far: 1000 }}
-          dpr={[1, 1.75]}
-          gl={{
-            alpha: true,
-            antialias: true,
-            powerPreference: "high-performance",
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.25,
-            outputColorSpace: THREE.SRGBColorSpace,
-          }}
-          shadows={{ type: THREE.PCFSoftShadowMap }}
+          camera={{ position: [0, 0.5, 4], fov: 45 }}
           style={{ width: "100%", height: "100%" }}
+          gl={{ alpha: true, antialias: true }}
         >
-          <Stats showPanel={0} className="stats" />
-          <IntroScene />
+          <Environment files="/hdr/studio_small_09_1k.hdr" environmentIntensity={0.3} />
+          <ambientLight intensity={0.4} />
+          <pointLight position={[10, 10, 10]} intensity={1} />
+
+          <React.Suspense fallback={null}>
+            <PCModelWithIntro
+              start={startIntro}
+              duration={1.2}
+              url="/models/90sPC.glb"
+              position={[0, -4, -1]}
+              rotation={[0, Math.PI / 2, 0]}
+              scale={1}
+            />
+          </React.Suspense>
+
+          <OrbitControls enableZoom={false} />
         </Canvas>
+
+
 
         {/* Countdown overlay */}
         <div
@@ -1020,11 +889,6 @@ export default function Page() {
         </Canvas>
 
         <CursorSparkle enabled={isOverWall} />
-
-        {/* <WallInstructions
-          show={showInstructions}
-          onDismiss={() => setShowInstructions(false)}
-        /> */}
       </div>
 
       {/* Background for later sections */}
@@ -1086,28 +950,31 @@ export default function Page() {
 
           let content: React.ReactNode = null
 
-          if (isWorkSection) {
+         if (isWorkSection) {
             content = (
-              <div
-                style={{
-                  width: "100%",
-                  maxWidth: "1200px",
-                  aspectRatio: "16 / 9",
-                }}
-              >
-                {/* <ArchivePortal /> */}
+              <div className="w-full h-full">
+                <ArchivePortal />
               </div>
             )
-          } else if (isARSection) {
+          }
+          
+          else if (isARSection) {
             content = <VideoModelTexture />
           } else if (isArtSection) {
             content = (
-              <ArtSlideshow
-                sectionName={section.name}
-                sectionText={section.text}
-                colors={colorPalettes[i] ?? ["#a855f7", "#ec4899", "#8b5cf6", "#d946ef"]}
-                slides={artSlides}
-              />
+              <ShaderFrame
+                title={section.name}
+                subtitle={section.text}
+                colors={
+                  colorPalettes[i] ?? [
+                    "#22c55e",
+                    "#06b6d4",
+                    "#4f46e5",
+                    "#a855f7",
+                  ]
+                }
+                showText={false}
+              ></ShaderFrame>
             )
           } else if (isMusicSection) {
             content = (
@@ -1129,7 +996,7 @@ export default function Page() {
                   <div className="w-full md:w-[350px] flex-shrink-0">
                     <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 flex items-center justify-center p-4">
                       <iframe 
-                        src="https://bandcamp.com/EmbeddedPlayer/album=3691821394/size=large/bgcol=333333/linkcol=9a64ff/tracklist=false/transparent=true/"
+                        src={MUSIC_CONTENT.bandcampUrl}
                         style={{
                           border: 0,
                           width: "100%",
@@ -1145,12 +1012,10 @@ export default function Page() {
                     {/* Headline text */}
                     <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/60 px-5 py-4">
                       <h2 className="text-lg md:text-xl font-semibold mb-1">
-                        debx0x
+                        {MUSIC_CONTENT.title}
                       </h2>
                       <p className="text-xs md:text-sm opacity-80 leading-snug">
-                        debx0x is my personal music project where I handle
-                        everything – production, composition, and all visual
-                        content including music videos.
+                        {MUSIC_CONTENT.description}
                       </p>
                     </div>
 
@@ -1225,31 +1090,7 @@ export default function Page() {
                 }
                 showText={false}
               >
-                <div className="text-white space-y-4 text-sm md:text-base">
-                  <div>
-                    <h3 className="font-semibold mb-1">Profile</h3>
-                    <p className="text-white/80">
-                      Frontend engineer and creative technologist exploring
-                      WebGL, shaders, and immersive web experiences.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold mb-1">Tech Stack</h3>
-                    <p className="text-white/80">
-                      React, TypeScript, Next.js, Three.js, React Three Fiber,
-                      GLSL shaders, WebGL.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold mb-1">Video Editing</h3>
-                    <p className="text-white/80">
-                      End-to-end video and motion design for music videos,
-                      installations, and interactive experiences.
-                    </p>
-                  </div>
-                </div>
+                <EnhancedAbout />
               </ShaderFrame>
             )
           } else {
@@ -1276,11 +1117,12 @@ export default function Page() {
               data-index={i}
               style={{
                 minHeight: "100vh",
+                height: isAboutSection || isWorkSection ? "100vh" : "auto",
                 scrollSnapAlign: "start",
                 display: "flex",
-                alignItems: "center",
+                alignItems: isAboutSection || isWorkSection ? "stretch" : "center",
                 justifyContent: "center",
-                padding: "6rem 1.5rem",
+                padding: isAboutSection || isWorkSection ? "5rem 1rem" : "6rem 1.5rem",
                 borderBottom: "1px solid rgba(255,255,255,0.1)",
                 pointerEvents: "auto",
               }}

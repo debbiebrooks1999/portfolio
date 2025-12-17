@@ -13,8 +13,6 @@ interface Project {
   description: string;
   techStack: string[];
   client: string;
-  agency?: string; // Agency where work was done
-  era?: "current" | "recent" | "legacy"; // For filtering/organization
   complexity: Complexity;
   featured: boolean;
   link: string;
@@ -22,11 +20,7 @@ interface Project {
   images?: string[]; // optional extra images for card
 }
 
-// Replace your PROJECTS array (lines 23-316) with this corrected version:
-// All your agencies are preserved, era fields added, and legacy projects fixed
-
 const PROJECTS: Project[] = [
-  // === CURRENT ERA (2023-2025) ===
   {
     id: "volvo-vr-experience",
     title: "Volvo VR Showroom",
@@ -37,8 +31,6 @@ const PROJECTS: Project[] = [
       "Immersive 360° VR experience with hotspot navigation and video spheres for Meta Quest devices.",
     techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
     client: "Automotive",
-    agency: "NDA",
-    era: "current",
     complexity: "high",
     featured: true,
     link: "",
@@ -50,14 +42,12 @@ const PROJECTS: Project[] = [
     thumbnail: "/archive/NJLoading.png",
     tags: ["AR", "WebXR", "QR Portals", "Three.js"],
     description:
-      "AR/VR experiences for Queenstown tourism with QR code portal system for gondola attractions.",
+      "AR experience for New Jersey Dreamwheel tourism attraction with QR code surface placeemnt for in-gondola entertainment, allwing exploration of NYC buildingd",
     techStack: ["Three.js", "WebXR", "AR.js", "React"],
     client: "Tourism",
-    agency: "Magic Memories",
-    era: "current",
     complexity: "high",
     featured: true,
-    link: "",
+    link: "https://example.com/skyline",
   },
   {
     id: "aquarium-ar-kids",
@@ -66,14 +56,12 @@ const PROJECTS: Project[] = [
     thumbnail: "/archive/sealifeShark.PNG",
     tags: ["AR", "WebXR", "QR Portals", "Three.js"],
     description:
-      "AR experiences for various aquarium attractions with QR code portal system for kids.",
+      "AR experiencess for various aquarium attractions, including SeaLife, with QR code portal system for kids.",
     techStack: ["Three.js", "WebXR", "AR.js", "React"],
     client: "Tourism",
-    agency: "Magic Memories",
-    era: "current",
     complexity: "high",
     featured: true,
-    link: "",
+    link: "https://example.com/skyline",
   },
   {
     id: "national-gallery-sound",
@@ -85,11 +73,25 @@ const PROJECTS: Project[] = [
       "Immersive virtual tour experience for the National Gallery London with spatial audio.",
     techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
     client: "Cultural Institution",
-    agency: "National Gallery",
-    era: "current",
     complexity: "high",
     featured: true,
     link: "https://www.nationalgallery.org.uk/visiting/virtual-tours/sensing-the-unseen-at-home",
+  },
+  {
+    id: "broadway",
+    title: "Broadway Re-Launch",
+    year: 2020,
+    thumbnail: "/archive/broadway.png",
+    video: "/archive/broadway.mp4",
+    images: ["/archive/broadway-1.png", "/archive/broadway-2.png"],
+    tags: ["E-commerce", "React", "Node.js"],
+    description:
+      "Full-stack e-commerce platform with payment integration and inventory management.",
+    techStack: ["React", "Node.js", "MongoDB", "Stripe"],
+    client: "Retail",
+    complexity: "medium",
+    featured: false,
+    link: "https://www.8thwall.com/aircards/broadway",
   },
   {
     id: "auckland-zoo",
@@ -108,8 +110,6 @@ const PROJECTS: Project[] = [
       "Dinosaur Discovery Track where visitors use phones to access AR dinosaur experiences at 25 animatronic dinosaurs.",
     techStack: ["React", "Three.js", "WebAR", "Zappar"],
     client: "Educational/Zoo",
-    agency: "Magic Memories",
-    era: "current",
     complexity: "high",
     featured: false,
     link: "",
@@ -121,13 +121,12 @@ const PROJECTS: Project[] = [
     thumbnail: "/archive/washnwag.png",
     tags: ["Web Design", "Framer Motion", "React"],
     description:
-      "Comprehensive website for dog grooming academy with complex animations and responsive design.",
+      "Comprehensive website for local dog grooming academy with complex animations and responsive design.",
     techStack: ["React", "Framer Motion", "Tailwind", "Next.js"],
     client: "Education",
-    era: "current",
     complexity: "medium",
     featured: false,
-    link: "",
+    link: "https://example.com/washnwag",
   },
   {
     id: "publish-library",
@@ -138,8 +137,6 @@ const PROJECTS: Project[] = [
     description: "Interactive tile-based archive system for AR publishing content.",
     techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
     client: "Publishing",
-    agency: "Yondr",
-    era: "current",
     complexity: "medium",
     featured: false,
     link: "",
@@ -147,14 +144,12 @@ const PROJECTS: Project[] = [
   {
     id: "google-chromebook",
     title: "Google Chromebook Setup Guide",
-    year: 2020,
+    year: 2021,
     thumbnail: "/archive/chromebook.png",
     tags: ["WebXR", "React Three Fiber", "VR", "Meta Quest"],
     description: "Interactive AR setup guide for Google Chromebook devices.",
     techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
     client: "Technology",
-    agency: "Cassette Group",
-    era: "current",
     complexity: "high",
     featured: true,
     link: "",
@@ -168,24 +163,20 @@ const PROJECTS: Project[] = [
     description: "Portal-based navigation system for AR publishing experiences.",
     techStack: ["Three.js", "WebXR", "AR.js", "React"],
     client: "Publishing",
-    agency: "Yondr",
-    era: "current",
     complexity: "medium",
     featured: false,
     link: "",
   },
   {
     id: "instagram-mac",
-    title: "M·A·C Cosmetics AR Try On",
+    title: "M-A-C Cosmetics AR Try On",
     year: 2019,
     thumbnail: "/archive/mac.jpg",
     video: "/archive/MacCosmeticsInsta.mp4",
     tags: ["Instagram AR", "Spark AR", "Beauty Tech"],
-    description: "Instagram AR filter for MAC Cosmetics product try-on.",
+    description: "First Instagram AR shopping filter for MAC Cosmetics product try-on.",
     techStack: ["Spark AR", "Instagram API", "AR Effects"],
     client: "Beauty/Retail",
-    agency: "The Mill - London",
-    era: "current",
     complexity: "high",
     featured: true,
     link: "",
@@ -199,40 +190,34 @@ const PROJECTS: Project[] = [
     description: "Interactive AR gift unwrapping experience.",
     techStack: ["React", "Three.js", "WebAR"],
     client: "Retail",
-    agency: "Yondr",
-    era: "current",
     complexity: "medium",
-    featured: false,
+    featured: true,
     link: "",
   },
   {
     id: "strainge-beast",
     title: "Strainge Beast Interactive",
-    year: 2020,
+    year: 2021,
     thumbnail: "/archive/strainge_beast.png",
     tags: ["WebGL", "Interactive", "Art"],
-    description: "Interactive web experience for Strainge Beast brand.",
+    description: "Interactive AR web experience for Strainge Beast brand, owned by Sierra Nevada.",
     techStack: ["Three.js", "WebGL", "GSAP"],
-    client: "Sierra Nevada",
-    agency: "Blippar",
-    era: "current",
+    client: "Entertainment",
     complexity: "medium",
-    featured: false,
+    featured: true,
     link: "",
   },
   {
     id: "takeda",
     title: "Takeda Pharma Experience",
-    year: 2021,
+    year: 2020,
     thumbnail: "/archive/takeda.png",
     tags: ["WebGL", "Medical", "Interactive"],
     description: "Interactive pharmaceutical visualization experience.",
     techStack: ["React", "Three.js", "WebGL"],
     client: "Pharmaceutical",
-    agency: "Cassette Group",
-    era: "current",
     complexity: "medium",
-    featured: false,
+    featured: true,
     link: "",
   },
   {
@@ -244,634 +229,278 @@ const PROJECTS: Project[] = [
     description: "Interactive 3D demo for Intel technology showcase.",
     techStack: ["React", "Three.js", "WebGL"],
     client: "Technology",
-    agency: "Eyekandy",
-    era: "current",
     complexity: "medium",
-    featured: false,
+    featured: true,
     link: "",
   },
   {
     id: "helmet",
     title: "3D Helmet Configurator",
-    year: 2024,
+    year: 2021,
     thumbnail: "/archive/helmet.jpg",
-    video: "/archive/helmet_effect capture 2.mov",
+    video:"/archive/helmet_effect capture 2.mov",
     tags: ["WebGL", "3D", "E-commerce"],
-    description: "3D product configurator for helmet customization.",
+    description: "Knorr ",
     techStack: ["Three.js", "React", "GLTF"],
     client: "Retail",
-    agency: "Blippar",
-    era: "current",
     complexity: "medium",
-    featured: false,
-    link: "",
-  },
-
-  // === RECENT ERA (2019-2022) ===
-  {
-    id: "broadway",
-    title: "Broadway Re-Launch",
-    year: 2020,
-    thumbnail: "/archive/broadway.png",
-    video: "/archive/broadway.mp4",
-    images: ["/archive/broadway-1.png", "/archive/broadway-2.png"],
-    tags: ["WebAR", "8th Wall", "Entertainment"],
-    description:
-      "AR experience for Broadway show re-launch using 8th Wall technology.",
-    techStack: ["8th Wall", "Three.js", "WebAR"],
-    client: "Retail",
-    agency: "Aircards",
-    era: "recent",
-    complexity: "medium",
-    featured: false,
-    link: "https://www.8thwall.com/aircards/broadway",
-  },
-
-  // === LEGACY ERA (2008-2018) - Major Brand Work ===
-  {
-    id: "chevrolet",
-    title: "Chevrolet Homepage Experience",
-    year: 2017,
-    thumbnail: "/archive/chev.jpg",
-    tags: ["Flash", "ActionScript", "High-Traffic", "Automotive"],
-    description: "Lead developer for Chevrolet's flagship homepage, handling millions of monthly visitors with rich interactive Flash experiences.",
-    techStack: ["Flash", "ActionScript 3", "XML", "JavaScript"],
-    client: "Chevrolet (General Motors)",
-    agency: "The Mill - Chicago",
-    era: "legacy",
-    complexity: "high",
     featured: true,
     link: "",
   },
-  {
-    id: "bicester",
-    title: "Bicester Village Shopping Portal",
+
+  
+   {
+    id: "chevrolet",
+    title: "Chevrolet",
     year: 2017,
-    thumbnail: "/archive/bicester.jpg",
-    tags: ["Flash", "Multi-language", "E-commerce", "Luxury"],
-    description: "Multi-skin, multi-language shopping portal for Bicester Village luxury outlet, featuring three distinct visual themes and comprehensive localization.",
-    techStack: ["Flash", "ActionScript 3", "XML", "Multi-language Framework"],
-    client: "Bicester Village",
-    agency: "Iris",
-    era: "legacy",
-    complexity: "high",
-    featured: false,
-    link: "",
+    thumbnail: "/archive/chev.jpg",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Real-time 3D audio visualization.",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
   },
   {
     id: "BA_T5_yesterday",
-    title: "British Airways T5 'Yesterday' - Award Winner",
+    title: "BA_T5_yesterday",
     year: 2008,
     thumbnail: "/archive/BA_T5_yesterday.png",
-    tags: ["Flash", "Award-Winning", "Campaign", "Travel"],
-    description: "Award-winning interactive experience for British Airways Terminal 5 opening, celebrating the history of flight with 'Yesterday' by The Beatles.",
-    techStack: ["Flash", "ActionScript 3", "Audio Synchronization"],
-    client: "British Airways",
-    agency: "Agency.com",
-    era: "legacy",
-    complexity: "high",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Award winning interactive experience for British Airways T5 opening.",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
     featured: true,
-    link: "",
+    link: "https://example.com/music",
   },
-  {
+   {
+    id: "bicester",
+    title: "bicester",
+    year: 2015,
+    thumbnail: "/archive/bicester.jpg",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Bicester Village portal for shooping with 3 dfferent skins and mulitple langauages",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
+  },
+   {
     id: "canon",
-    title: "Canon Interactive Kiosk - Paris Event",
+    title: "Canon Touch Screen",
     year: 2010,
     thumbnail: "/archive/canonTouchScreen.png",
-    tags: ["Flash", "Touch Screen", "Kiosk", "Event"],
-    description: "Large-scale touch screen kiosk experience for Canon at major Paris Canon Expo event",
-    techStack: ["Flash", "ActionScript 3", "Touch Interface", "Kiosk Framework"],
-    client: "Canon",
-    agency: "Tequila", 
-    era: "legacy",
-    complexity: "high",
-    featured: false,
-    link: "",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Canon Touch Screen Kiosk experience at Major event in Paris",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
   },
-  {
+   {
     id: "butlin",
-    title: "Butlins Complete Rebrand",
+    title: "Butlins Rebrand",
     year: 2010,
     thumbnail: "/archive/butlins.jpg",
-    tags: ["Flash", "Rebrand", "Entertainment", "Family"],
-    description: "Comprehensive digital rebrand for Butlins holiday resorts, modernizing the family entertainment brand for the digital age.",
-    techStack: ["Jade", "Javascript", "Modular"],
-    client: "Butlins",
-    agency: "Grand Union", 
-    era: "legacy",
-    complexity: "high",
-    featured: false,
-    link: "",
-  },
-  {
-    id: "ogilvy",
-    title: "Ogilvy Fellowship WordPress Portal",
-    year: 2010,
-    thumbnail: "/archive/OgilvyFellowshipWP.png",
-    tags: ["WordPress", "PHP", "Custom Theme"],
-    description: "Custom WordPress portal for Ogilvy Fellowship program, managing applications and showcasing fellow work.",
-    techStack: ["WordPress", "PHP", "MySQL", "Custom Theme Development"],
-    client: "Ogilvy & Mather",
-    agency: "Ogilvy & Mather",
-    era: "legacy",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Complex Re-brand",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
     complexity: "medium",
-    featured: false,
-    link: "",
-  },
-  {
-    id: "mercedes",
-    title: "Mercedes-Benz 'Tweet Race'",
-    year: 2011,
-    thumbnail: "/archive/mercedes.png",
-    tags: ["Flash", "Social Media", "Real-time", "Automotive"],
-    description: "Innovative social media campaign where Twitter interactions powered animated Mercedes vehicles on a virtual racetrack in real-time.",
-    techStack: ["Javascript", "Twitter API", "Real-time Animation"],
-    client: "Mercedes-Benz",
-    agency: "Razorfish", 
-    era: "legacy",
-    complexity: "high",
     featured: true,
-    link: "",
-  },
-  {
-    id: "mercedes-fleet",
-    title: "Mercedes Fleet Digital Magazine",
-    year: 2013,
-    thumbnail: "/archive/mercedes-fleet.jpg",
-    tags: ["Flash", "Publishing", "Interactive Magazine"],
-    description: "Interactive digital magazine for Mercedes fleet services, featuring rich media content and engaging page-flip animations.",
-    techStack: ["Flash", "ActionScript 3", "Page Flip Engine"],
-    client: "Mercedes-Benz",
-    agency: "MRM-Meteorite", 
-    era: "legacy",
-    complexity: "medium",
-    featured: false,
-    link: "",
-  },
-  {
-    id: "BA-caribbean",
-    title: "British Airways Caribbean Campaign",
+    link: "https://example.com/music",
+  }
+  ,
+   {
+    id: "Ogilvy",
+    title: "Ogilvy Fellowship Wordpress",
     year: 2012,
-    thumbnail: "/archive/BA_carib.png",
-    tags: ["Flash", "Campaign", "Travel", "Interactive"],
-    description: "Rich interactive campaign for British Airways Caribbean routes, featuring destination exploration and booking integration.",
-    techStack: ["Flash", "ActionScript 3", "Video Integration"],
-    client: "British Airways",
-     agency: "Agency.com & TBWA/ London", 
-    era: "legacy",
-    complexity: "high",
-    featured: false,
-    link: "",
-  },
-  {
-    id: "apple-itune",
-    title: "Apple iTunes - Leona Lewis Campaign",
-    year: 2011,
-    thumbnail: "/archive/leona.png",
-    tags: ["Flash", "Music", "Campaign", "High-Profile"],
-    description: "iTunes promotional campaign for Leona Lewis album launch, featuring interactive music visualization.",
-    techStack: ["Flash", "ActionScript 3", "Audio Visualization"],
-    client: "Apple",
-    agency: "TBWA\ Media Arts Lab",
-    era: "legacy",
+    thumbnail: "/archive/OgilvyFellowshipWP.png",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Wordpress site for Ogilvy Fellowship",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
     complexity: "medium",
     featured: true,
-    link: "",
-  },
-  {
+    link: "https://example.com/music",
+  }
+   ,
+   {
+    id: "mercedes",
+    title: "Mercedes Tweet Powered Racetack",
+    year: 2013,
+    thumbnail: "/archive/mercedes.png",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Mercedes Tweet animated Powered Racetrack",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
+  }
+   ,
+   {
     id: "apple-nano",
-    title: "Apple iPod Nano Launch Campaign",
+    title: "Apple Nano Launch",
     year: 2011,
     thumbnail: "/archive/nano.png",
-    tags: ["Flash", "Banner", "Product Launch", "High-Traffic"],
-    description: "High-impact banner campaign for iPod Nano launch using custom JLSX banner engine for dynamic creative.",
-    techStack: ["Flash", "ActionScript 3", "JLSX Banner Engine"],
-    client: "Apple",
-   agency: "TBWA\ Media Arts Lab",
-    era: "legacy",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "JLSX Banner engine",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
     complexity: "medium",
     featured: true,
-    link: "",
-  },
-  {
+    link: "https://example.com/music",
+  }
+   ,
+   {
+    id: "apple-itune",
+    title: "Apple iTunes",
+    year: 2011,
+    thumbnail: "/archive/leona.png",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Apple iTunes",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
+  }
+  ,
+   {
     id: "harley-davidson",
-    title: "Harley Davidson Arabic Website",
+    title: "Harley Davidson",
     year: 2014,
     thumbnail: "/archive/HD.jpg",
-    tags: ["Flash", "RTL", "Localization", "Automotive"],
-    description: "Complete Arabic website for Harley Davidson, featuring right-to-left layout and culturally adapted content for Middle Eastern markets.",
-    techStack: ["Flash", "ActionScript 3", "RTL Layout", "Arabic Typography"],
-    client: "Harley-Davidson",
-    agency: "Sapient Nitro", 
-    era: "legacy",
-    complexity: "high",
-    featured: false,
-    link: "",
-  },
-  {
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Harley Davidson Arabic Website.",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
+  }
+   ,
+   {
     id: "sky",
-    title: "Sky Go Interactive Experience",
+    title: "Sky Go Game",
     year: 2016,
     thumbnail: "/archive/sky.jpg",
-    tags: ["Flash", "ActionScript", "Streaming", "Interactive"],
-    description: "Interactive promotional experience for Sky Go streaming service, showcasing on-demand content capabilities.",
-    techStack: ["Flash", "ActionScript 3", "Video Streaming"],
-    client: "Sky",
-    agency: "Brothers & Sisters Creative Ltd", 
-    era: "legacy",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Sky Go Game",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
     complexity: "medium",
-    featured: false,
-    link: "",
-  },
-  {
-    id: "BA-fisher",
-    title: "British Airways Audio Experience",
+    featured: true,
+    link: "https://example.com/music",
+  }
+   ,
+   {
+    id: "BA_Fisher",
+    title: "BA Fisher",
     year: 2010,
     thumbnail: "/archive/BA_Fisher.png",
-    tags: ["Flash", "Audio", "Interactive"],
-    description: "Audio-driven interactive experience for British Airways, featuring dynamic soundscapes and musical elements.",
-    techStack: ["Flash", "ActionScript 3", "Audio API"],
-    client: "British Airways",
-     agency: "Agency.com & TBWA/ London", 
-    era: "legacy",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "BA Fisher Audio work",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
     complexity: "medium",
-    featured: false,
-    link: "",
+    featured: true,
+    link: "https://example.com/music",
+  }
+  ,
+   {
+    id: "Mercedes-Fleet",
+    title: "Mercedes Fleet",
+    year: 2013,
+    thumbnail: "/archive/mercedes-fleet.jpg",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Mercedes Fleet magazine",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
   },
+    {
+    id: "ITV-Brodband",
+    title: "ITV BT Broqdband",
+    year: 2009,
+    thumbnail: "/archive/BT_Broadband.png",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "ITV homepage takeover for BT Broadband",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
+  },
+  {
+    id: "BA-Facebook",
+    title: "Facebook BA Height Cuisine App",
+    year: 2010,
+    thumbnail: "/archive/BA_HeightCuisine.png",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Facebook BA Height Cuisine App",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
+  },
+
   {
     id: "nike",
     title: "Nike Banner Campaign",
     year: 2010,
     thumbnail: "/archive/nike.png",
-    tags: ["Flash", "Banner", "Sports", "High-Impact"],
-    description: "High-impact display banner campaign for Nike, featuring dynamic animations and product showcases.",
-    techStack: ["Flash", "ActionScript 3", "Banner Framework"],
-    client: "Nike",
-     agency: "Agency.com & TBWA/ London", 
-    era: "legacy",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Nike Banner Campaign",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
     complexity: "medium",
-    featured: false,
-    link: "",
-  },
-  {
-    id: "ITV-broadband",
-    title: "ITV Homepage Takeover - BT Broadband",
-    year: 2009,
-    thumbnail: "/archive/BT_Broadband.png",
-    tags: ["Flash", "Homepage Takeover", "High-Traffic", "Telecoms"],
-    description: "Major homepage takeover for ITV.com promoting BT Broadband, handling massive concurrent traffic with rich interactive elements.",
-    techStack: ["Flash", "ActionScript 3", "High-Performance"],
-    client: "BT / ITV",
-     agency: "Agency.com & TBWA/ London", 
-    era: "legacy",
-    complexity: "high",
     featured: true,
-    link: "",
+    link: "https://example.com/music",
   },
-  {
-    id: "BA-facebook",
-    title: "British Airways Height Cuisine Facebook App",
-    year: 2010,
-    thumbnail: "/archive/BA_HeightCuisine.png",
-    tags: ["Flash", "Facebook", "Social Media", "Food"],
-    description: "Facebook application for British Airways 'Height Cuisine' campaign, engaging users with in-flight dining experiences.",
-    techStack: ["Flash", "ActionScript 3", "Facebook API"],
-    client: "British Airways",
-    agency: "Agency.com & TBWA/ London", 
-    era: "legacy",
-    complexity: "medium",
-    featured: false,
-    link: "",
-  },
+
   {
     id: "sky-store",
-    title: "Sky Store Interactive Card Game",
+    title: "sky-store",
     year: 2017,
     thumbnail: "/archive/sky_store.jpg",
-    tags: ["JavaScript", "Interactive", "Entertainment", "Gaming"],
-    description: "Interactive card game experience for Sky Store, driving user engagement with Sky's digital entertainment platform.",
-    techStack: ["JavaScript", "Canvas API", "CSS3"],
-    client: "Sky",
-    agency: "Brothers & Sisters Creative Ltd", 
-    era: "legacy",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "Sky Store card game",
+    techStack: ["Three.js", "Web Audio API", "GLSL"],
+    client: "Personal",
     complexity: "medium",
-    featured: false,
-    link: "",
+    featured: true,
+    link: "https://example.com/music",
   },
+  {
+    id: "BA-Carribean",
+    title: "BA Carribean",
+    year: 2012,
+    thumbnail: "/archive/BA_carib.png",
+    tags: ["Three.js", "Audio", "WebGL"],
+    description: "BA Carribean Interactive experience",
+    techStack: ["Flash", "Web"],
+    client: "Personal",
+    complexity: "medium",
+    featured: true,
+    link: "https://example.com/music",
+  },
+
+
+  
 ];
-// const PROJECTS: Project[] = [
-//   {
-//     id: "volvo-vr-experience",
-//     title: "Volvo VR Showroom",
-//     year: 2025,
-//     thumbnail: "/archive/volvo.png",
-//     tags: ["WebXR", "React Three Fiber", "VR", "Meta Quest"],
-//     description:
-//       "Immersive 360° VR experience with hotspot navigation and video spheres for Meta Quest devices.",
-//     techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
-//     client: "Automotive",
-//     agency:"NDA",
-//     era: "current",
-//     complexity: "high",
-//     featured: true,
-//     link: "",
-//   },
-//   {
-//     id: "dreamwheel-ar-portal",
-//     title: "New York Dreamwheel AR Tourism",
-//     year: 2023,
-//     thumbnail: "/archive/NJLoading.png",
-//     tags: ["AR", "WebXR", "QR Portals", "Three.js"],
-//     description:
-//       "AR/VR experiences for Queenstown tourism with QR code portal system for gondola attractions.",
-//     techStack: ["Three.js", "WebXR", "AR.js", "React"],
-//     client: "Tourism",
-//     agency:"Magic Memories",
-//     complexity: "high",
-//     featured: true,
-//     link: "https://example.com/skyline",
-//   },
-//   {
-//     id: "aquarium-ar-kids",
-//     title: "Aquarium AR Kids Experience",
-//     year: 2023,
-//     thumbnail: "/archive/sealifeShark.PNG",
-//     tags: ["AR", "WebXR", "QR Portals", "Three.js"],
-//     description:
-//       "AR experiencess for various aquarium attractions with QR code portal system for kids.",
-//     techStack: ["Three.js", "WebXR", "AR.js", "React"],
-//     client: "Tourism",
-//     agency:"Magic Memories",
-//     complexity: "high",
-//     featured: true,
-//     link: "https://example.com/skyline",
-//   },
-//   {
-//     id: "national-gallery-sound",
-//     title: "Sensing The Unseen - National Gallery",
-//     year: 2024,
-//     thumbnail: "/archive/icon1.png",
-//     tags: ["WebXR", "Virtual Tour", "Audio", "Three.js"],
-//     description:
-//       "Immersive virtual tour experience for the National Gallery London with spatial audio.",
-//     techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
-//     client: "Cultural Institution",
-//     agency:"National Gallery",
-//     complexity: "high",
-//     featured: true,
-//     link: "https://www.nationalgallery.org.uk/visiting/virtual-tours/sensing-the-unseen-at-home",
-//   },
-//   {
-//     id: "broadway",
-//     title: "Broadway Re-Launch",
-//     year: 2020,
-//     thumbnail: "/archive/broadway.png",
-//     video: "/archive/broadway.mp4",
-//     images: ["/archive/broadway-1.png", "/archive/broadway-2.png"],
-//     tags: ["E-commerce", "React", "Node.js"],
-//     description:
-//       "Full-stack e-commerce platform with payment integration and inventory management.",
-//     techStack: ["React", "Node.js", "MongoDB", "Stripe"],
-//     client: "Retail",
-//     agency:"Aircards",
-//     complexity: "medium",
-//     featured: false,
-//     link: "https://www.8thwall.com/aircards/broadway",
-//   },
-//   {
-//     id: "auckland-zoo",
-//     title: "Auckland Zoo AR Dinosaurs",
-//     year: 2024,
-//     thumbnail: "/archive/aucklandZooLogo.png",
-//     tags: [
-//       "WebAR",
-//       "Audio",
-//       "Three.js",
-//       "Zappar",
-//       "Mattercraft",
-//       "Wildlife & Conservation",
-//     ],
-//     description:
-//       "Dinosaur Discovery Track where visitors use phones to access AR dinosaur experiences at 25 animatronic dinosaurs.",
-//     techStack: ["React", "Three.js", "WebAR", "Zappar"],
-//     client: "Educational/Zoo",
-//      agency:"Magic Memories",
-//     complexity: "high",
-//     featured: false,
-//     link: "",
-//   },
-//   {
-//     id: "wash-n-wag",
-//     title: "Wash N Wag Academy",
-//     year: 2024,
-//     thumbnail: "/archive/washnwag.png",
-//     tags: ["Web Design", "Framer Motion", "React"],
-//     description:
-//       "Comprehensive website for dog grooming academy with complex animations and responsive design.",
-//     techStack: ["React", "Framer Motion", "Tailwind", "Next.js"],
-//     client: "Advertiing",
-//     complexity: "medium",
-//     featured: false,
-//     link: "https://example.com/washnwag",
-//   },
-//   {
-//     id: "publish-library",
-//     title: "AR Publishers Archive",
-//     year: 2024,
-//     thumbnail: "/archive/tile.png",
-//     tags: ["WebXR", "React Three Fiber", "VR"],
-//     description: "Interactive tile-based archive system for AR publishing content.",
-//     techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
-//     client: "Publishing",
-//     agency:"Yondr",
-//     complexity: "medium",
-//     featured: false,
-//     link: "",
-//   },
-//   {
-//     id: "google-chromebook",
-//     title: "Google Chromebook Setup Guide",
-//     year: 2024,
-//     thumbnail: "/archive/chromebook.png",
-//     tags: ["WebXR", "React Three Fiber", "VR", "Meta Quest"],
-//     description: "Interactive AR setup guide for Google Chromebook devices.",
-//     techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
-//     client: "Technology",
-//     agency:"Cassette Group",
-//     complexity: "high",
-//     featured: true,
-//     link: "",
-//   },
-//   {
-//     id: "publishing-portal",
-//     title: "AR Publishers Portal",
-//     year: 2023,
-//     thumbnail: "/archive/portal.png",
-//     tags: ["AR", "WebXR", "QR Portals", "Three.js"],
-//     description: "Portal-based navigation system for AR publishing experiences.",
-//     techStack: ["Three.js", "WebXR", "AR.js", "React"],
-//     client: "Publishing",
-//     agency:"Yondr",
-//     complexity: "medium",
-//     featured: false,
-//     link: "",
-//   },
-//   {
-//     id: "instagram-mac",
-//     title: "M-A-C Cosmetics AR Try On",
-//     year: 2024,
-//     thumbnail: "/archive/mac.jpg",
-//     video: "/archive/MacCosmeticsInsta.mp4",
-//     tags: ["Instagram AR", "Spark AR", "Beauty Tech"],
-//     description: "Instagram AR filter for MAC Cosmetics product try-on.",
-//     techStack: ["Spark AR", "Instagram API", "AR Effects"],
-//     client: "Beauty/Retail",
-//     agency:"The Mill",
-//     complexity: "high",
-//     featured: true,
-//     link: "",
-//   },
-//   {
-//     id: "mlso-gift",
-//     title: "AR Gift Experience",
-//     year: 2024,
-//     thumbnail: "/archive/mlso.png",
-//     tags: ["WebAR", "Gifting", "Interactive"],
-//     description: "Interactive AR gift unwrapping experience.",
-//     techStack: ["React", "Three.js", "WebAR"],
-//     client: "Retail",
-//     agency:"Yondr",
-//     complexity: "medium",
-//     featured: true,
-//     link: "",
-//   },
-//   {
-//     id: "strainge-beast",
-//     title: "Strainge Beast Interactive",
-//     year: 2024,
-//     thumbnail: "/archive/strainge_beast.png",
-//     tags: ["WebGL", "Interactive", "Art"],
-//     description: "Interactive web experience for Strainge Beast brand.",
-//     techStack: ["Three.js", "WebGL", "GSAP"],
-//     client: "Sierra Nevada",
-//     agency:"Blippar",
-//     complexity: "medium",
-//     featured: true,
-//     link: "",
-//   },
-//   {
-//     id: "takeda",
-//     title: "Takeda Pharma Experience",
-//     year: 2024,
-//     thumbnail: "/archive/takeda.png",
-//     tags: ["WebGL", "Medical", "Interactive"],
-//     description: "Interactive pharmaceutical visualization experience.",
-//     techStack: ["React", "Three.js", "WebGL"],
-//     client: "Pharmaceutical",
-//     agency:"Cassette Group",
-//     complexity: "medium",
-//     featured: true,
-//     link: "",
-//   },
-//   {
-//     id: "intel",
-//     title: "Intel Interactive Demo",
-//     year: 2024,
-//     thumbnail: "/archive/PLayCanvas_Intel.png",
-//     tags: ["WebGL", "Tech Demo", "3D"],
-//     description: "Interactive 3D demo for Intel technology showcase.",
-//     techStack: ["React", "Three.js", "WebGL"],
-//     client: "Technology",
-//     agency:"Eyekandy",
-//     complexity: "medium",
-//     featured: true,
-//     link: "",
-//   },
-//   {
-//     id: "helmet",
-//     title: "3D Helmet Configurator",
-//     year: 2024,
-//     thumbnail: "/archive/helmet.jpg",
-//     video:"/archive/helmet_effect capture 2.mov",
-//     tags: ["WebGL", "3D", "E-commerce"],
-//     description: "3D product configurator for helmet customization.",
-//     techStack: ["Three.js", "React", "GLTF"],
-//     client: "Retail", 
-//     agency:"Blippar",
-//     complexity: "medium",
-//     featured: true,
-//     link: "",
-//   },
-//   // {
-//   //   id: "alchemist",
-//   //   title: "Alchemist Bar Experience",
-//   //   year: 2024,
-//   //   thumbnail: "/archive/alchemist.jpg",
-//   //   video:"/archive/Alchemist_bombay_saphire_demo.mp4",
-//   //   tags: ["Web Design", "Interactive"],
-//   //   description: "Interactive web experience for Alchemist cocktail bar.",
-//   //   techStack: ["React", "GSAP", "Framer Motion"],
-//   //   client: "Hospitality",
-//   //   complexity: "low",
-//   //   featured: true,
-//   //   link: "",
-//   // },
-//   // {
-//   //   id: "music-visualizer",
-//   //   title: "3D Music Visualizer",
-//   //   year: 2022,
-//   //   thumbnail: "/archive/music.jpg",
-//   //   tags: ["Three.js", "Audio", "WebGL"],
-//   //   description: "Real-time 3D audio visualization.",
-//   //   techStack: ["Three.js", "Web Audio API", "GLSL"],
-//   //   client: "Personal",
-//   //   complexity: "medium",
-//   //   featured: true,
-//   //   link: "https://example.com/music",
-//   // },
-//    {
-//     id: "chevrolet",
-//     title: "Chevrolet",
-//     year: 2010,
-//     thumbnail: "/archive/chev.jpg",
-//     tags: ["Three.js", "Audio", "WebGL"],
-//     description: "Real-time 3D audio visualization.",
-//     techStack: ["Three.js", "Web Audio API", "GLSL"],
-//     client: "Chevrolet",
-//     agency:"The Mill",
-//     complexity: "high",
-//     featured: true,
-//     link: "https://example.com/music",
-//   },
-//   {
-//     id: "BA_T5_yesterday",
-//     title: "BA_T5_yesterday",
-//     year: 2010,
-//     thumbnail: "/archive/BA_T5_yesterday.png",
-//     tags: ["Three.js", "Audio", "WebGL"],
-//     description: "Real-time 3D audio visualization.",
-//     techStack: ["Three.js", "Web Audio API", "GLSL"],
-//     client: "Personal",
-//     complexity: "medium",
-//     agency:"Agency.com",
-//     featured: true,
-//     link: "https://example.com/music",
-//   },
-//    {
-//     id: "bicester",
-//     title: "bicester",
-//     year: 2020,
-//     thumbnail: "/archive/bicester.jpg",
-//     tags: ["Three.js", "Audio", "WebGL"],
-//     description: "Real-time 3D audio visualization.",
-//     techStack: ["Three.js", "Web Audio API", "GLSL"],
-//     client: "Personal",
-//     complexity: "medium",
-//     agency:"Iris",
-//     featured: true,
-//     link: "https://example.com/music",
-//   }
-// ];
+
+  
+
+
 
 export default function ArchivePortal() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -917,38 +546,21 @@ export default function ArchivePortal() {
 
   const filteredProjects = useMemo(() => {
     return PROJECTS.filter((project) => {
-      // Era-based filtering
-      if (activeFilter === "current") {
-        const matchesEra = project.era === "current" || project.year >= 2023;
-        if (!matchesEra) return false;
-      } else if (activeFilter === "recent") {
-        const matchesEra = project.era === "recent" || (project.year >= 2019 && project.year <= 2022);
-        if (!matchesEra) return false;
-      } else if (activeFilter === "legacy") {
-        const matchesEra = project.era === "legacy" || project.year <= 2018;
-        if (!matchesEra) return false;
-      } else {
-        // Regular filter logic
-        const matchesFilter =
-          activeFilter === "all" ||
-          (activeFilter === "featured" && project.featured) ||
-          project.tags.some((tag) =>
-            tag.toLowerCase().includes(activeFilter.toLowerCase())
-          );
-        if (!matchesFilter) return false;
-      }
+      const matchesFilter =
+        activeFilter === "all" ||
+        (activeFilter === "featured" && project.featured) ||
+        project.tags.some((tag) =>
+          tag.toLowerCase().includes(activeFilter.toLowerCase())
+        );
 
-      // Search term filtering
       const lowerSearch = searchTerm.toLowerCase();
       const matchesSearch =
         lowerSearch === "" ||
         project.title.toLowerCase().includes(lowerSearch) ||
         project.description.toLowerCase().includes(lowerSearch) ||
-        project.client.toLowerCase().includes(lowerSearch) ||
-        (project.agency && project.agency.toLowerCase().includes(lowerSearch)) ||
         project.tags.some((tag) => tag.toLowerCase().includes(lowerSearch));
 
-      return matchesSearch;
+      return matchesFilter && matchesSearch;
     });
   }, [activeFilter, searchTerm]);
 
@@ -1005,27 +617,7 @@ export default function ArchivePortal() {
               onClick={() => setActiveFilter("featured")}
               count={PROJECTS.filter((p) => p.featured).length}
             />
-            {/* Era filters */}
-            <FilterPill
-              label="Current (2023+)"
-              active={activeFilter === "current"}
-              onClick={() => setActiveFilter("current")}
-              count={PROJECTS.filter((p) => p.era === "current" || p.year >= 2023).length}
-            />
-            <FilterPill
-              label="Recent (2019-2022)"
-              active={activeFilter === "recent"}
-              onClick={() => setActiveFilter("recent")}
-              count={PROJECTS.filter((p) => p.era === "recent" || (p.year >= 2019 && p.year <= 2022)).length}
-            />
-            <FilterPill
-              label="Legacy (2008-2018)"
-              active={activeFilter === "legacy"}
-              onClick={() => setActiveFilter("legacy")}
-              count={PROJECTS.filter((p) => p.era === "legacy" || p.year <= 2018).length}
-            />
-            {/* Top tech tags */}
-            {allTags.slice(0, 5).map((tag) => (
+            {allTags.slice(0, 8).map((tag) => (
               <FilterPill
                 key={tag}
                 label={tag}
@@ -1253,19 +845,10 @@ function ProjectCard({
             <h3 className="font-medium text-sm md:text-[15px] line-clamp-1 group-hover:text-sky-200 transition-colors">
               {project.title}
             </h3>
-            <span className="text-[11px] text-slate-500 ml-2 flex-shrink-0">
+            <span className="text-[11px] text-slate-500 ml-2">
               {project.year}
             </span>
           </div>
-
-          {/* Agency badge if present */}
-          {project.agency && (
-            <div className="mb-2">
-              <span className="inline-block px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 text-[10px] text-purple-200 rounded-full">CLIENT: 
-                {project.agency}
-              </span>
-            </div>
-          )}
 
           <p className="text-[11px] md:text-xs text-slate-400 line-clamp-2 mb-3 leading-relaxed">
             {project.description}
@@ -1371,14 +954,9 @@ function ProjectDetail({
                 <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-1 text-slate-50">
                   {project.title}
                 </h2>
-                <p className="text-sm text-slate-400 mb-2">
+                <p className="text-sm text-slate-400">
                   {project.year} · {project.client}
                 </p>
-                {project.agency && (
-                  <p className="text-xs text-purple-300">
-                    <span className="text-slate-500">Agency:</span> {project.agency}
-                  </p>
-                )}
               </div>
               {project.featured && (
                 <span className="px-3 py-1 bg-sky-500/90 text-slate-950 rounded-full text-xs font-semibold h-fit">

@@ -8,7 +8,7 @@ export const sections = [
     poster: '/',
   },
   {
-    name: 'Art',
+    name: 'Lab',
     text: 'This section could describe the Spiral Nebula. Add unique text or visuals here.',
     videoSrc: '/videos/video.mp4',
     poster: '/',
