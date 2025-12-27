@@ -34,15 +34,13 @@ import ShootingRain from "./components/ShootingRain"
 import { SprayCursor3D } from "./components/SprayCursor3D"
 import { CyberpunkSkyline } from "./components/CyberpunkSkyline"
 import CityModel from "./components/CityModel"
-// import { ArtSlideshow, type ArtSlide } from "./components/ArtSlideshow"
-// import { Manhole, RoseSystem, ManholeState, RoseData } from "./components/ManholeRoseSystem"
-// import { LotusLeaf, LotusFlower } from "./components/LotusComponents"
+import { ArtSlideshow, type ArtSlide } from "./components/ArtSlideshow"
+import { Manhole, RoseSystem, ManholeState, RoseData } from "./components/ManholeRoseSystem"
+import { LotusLeaf, LotusFlower } from "./components/LotusComponents"
 import EnhancedAbout from "./components/EnhancedAbout"
-// import { GLBOverlayLoader } from './components/GLBOverlayLoader'
+import { GLBOverlayLoader } from './components/GLBOverlayLoader'
 import PCModelWithIntro from './components/PCModelWithIntro'
-import VATRoseSystem from "./components/VATRoseSystem"
-
-import TerminalTypewriter from './components/TerminalTypewriter'
+// import TerminalTypewriter from './components/TerminalTypewriter'
 // import RoseHoverScene from './components/RoseHoverScene'
 // Import content data
 import {
@@ -58,6 +56,10 @@ import {
   type MusicVideo,
   type ArtSlide as ArtSlideType,
 } from "./content-data"
+
+import Scene from "./Scene"
+
+// type Phase = "intro" | "main"
 
 
 /* ---------- Types ---------- */
@@ -78,6 +80,8 @@ const SECTIONS = [
 ]
 
 const colorPalettes = generateColorPalettes(SECTIONS)
+
+
 
 /* ---------- Camera Controller (Intro Animation + Rotation) ---------- */
 
@@ -241,9 +245,10 @@ function LandingScene({
   const [hasScrambled, setHasScrambled] = useState(false)
   const currentFontRef = useRef("/fonts/Inversionz.ttf")
 
+
   // Manhole and Rose state
-  // const [manholeState, setManholeState] = useState<ManholeState>('idle');
-  // const rosesRef = useRef<RoseData[]>([]);
+  const [manholeState, setManholeState] = useState<ManholeState>('idle');
+  const rosesRef = useRef<RoseData[]>([]);
   
   // Lotus flower state management - SINGLE DECLARATION
   const [flowers, setFlowers] = useState<Array<{ 
@@ -386,18 +391,12 @@ function LandingScene({
             color="#ffffff"
             castShadow
           />
-          <group 
-              scale={[0.5, 0.5, 0.5]} 
-              position={[0, -1, 0.78]}  
-              rotation={[0.349, 0, 0]}
-            >
-          <VATRoseSystem groundY={-0.5} size={20} />
-          </group>
+
           <group scale={[2, 1, 1]} position={[1, -1, 0.1]}>
             <PuddleCitySurface />
 
             {/* Manhole, Roses, and Lotus Garden */}
-            {/* <group 
+            <group 
               scale={[0.3, 0., 0.5]} 
               position={[0, -0.25, 0.78]}  
               rotation={[0.349, 0, 0]}
@@ -408,14 +407,14 @@ function LandingScene({
               rotation={[0.349, 0, 0]}
             > */}
 
-              {/*  */}
+              {/* <RoseHoverScene /> */}
 
               {/* Manhole */}  {/* Rose System */}
-              {/* <Manhole 
+              <Manhole 
                 state={manholeState} 
                 onStateChange={setManholeState}
                 rosesRef={rosesRef}
-              /> */}
+              />
               
             
               {/* <group scale={[0.3, 0.3, 0.3]} position={[0, 0, 0]}>
@@ -426,7 +425,7 @@ function LandingScene({
               </group> */}
               
               {/* Lotus Garden */}
-              {/* <group scale={[0.1, 0.1, 0.1]} position={[0, 0.1, 0]}>
+              <group scale={[0.1, 0.1, 0.1]} position={[0, 0.1, 0]}>
 
               <LotusLeaf 
                 position={[-20, 0, 0]} 
@@ -460,9 +459,7 @@ function LandingScene({
                ))}
 
               </group>
-               */}
-            {/* </group>  */}
-
+            </group>
           </group>
 
           <group scale={1.2} position={[1, 0.2, 0]}>
@@ -498,9 +495,8 @@ function LandingScene({
 }
 
 /* ---------- Header ---------- */
+
 function Header({ active, onJump, sections }: HeaderProps) {
-  const [showContact, setShowContact] = React.useState(false);
-  
   // Define the highlight colors for each index
   const highlightColors = ["#ff006e", "#00f7ff", "#fee440", "#70d6ff", "#9b5de5", "#00ff88"];
 
@@ -511,7 +507,7 @@ function Header({ active, onJump, sections }: HeaderProps) {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 50,
+        zIndex: 50, // Increased z-index to ensure it's above all 3D layers
         backdropFilter: "blur(10px)",
         background: "rgba(0,0,0,0.6)",
         borderBottom: "1px solid rgba(255,255,255,0.1)",
@@ -522,7 +518,7 @@ function Header({ active, onJump, sections }: HeaderProps) {
         .nav-mask {
           display: inline-block;
           overflow: hidden;
-          height: 1.5rem;
+          height: 1.5rem; /* Matches line-height of text */
           vertical-align: middle;
           cursor: pointer;
           padding: 0 0.75rem;
@@ -541,113 +537,27 @@ function Header({ active, onJump, sections }: HeaderProps) {
           transform: translateY(0);
         }
 
+        /* The Masked Hover Logic */
         .nav-mask:hover .lift-text {
           transform: translateY(-1.5rem);
           color: transparent;
         }
 
+        /* Active State Style */
         .nav-mask.is-active {
           background: rgba(255, 255, 255, 0.1);
           border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .contact-dropdown {
-          position: absolute;
-          top: calc(100% + 0.5rem);
-          right: 1.5rem;
-          background: rgba(0, 0, 0, 0.95);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 1rem;
-          padding: 1rem;
-          min-width: 280px;
-          box-shadow: 0 8px 32px rgba(0, 255, 136, 0.15);
-          animation: slideDown 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .contact-item {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.75rem;
-          margin: 0.25rem 0;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-decoration: none;
-          color: rgba(255, 255, 255, 0.8);
-          border: 1px solid transparent;
-        }
-
-        .contact-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          border-color: rgba(0, 255, 136, 0.3);
-          color: #00ff88;
-          transform: translateX(4px);
-        }
-
-        .contact-icon {
-          width: 20px;
-          height: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1rem;
-        }
-
-        .contact-label {
-          font-family: monospace;
-          font-size: 0.875rem;
-          letter-spacing: 0.05em;
-        }
-
-        .contact-button {
-          padding: 0.5rem 1rem;
-          border-radius: 9999px;
-          border: 1px solid rgba(0, 255, 136, 0.3);
-          background: rgba(0, 255, 136, 0.05);
-          color: #00ff88;
-          font-family: monospace;
-          font-size: 0.875rem;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
-        }
-
-        .contact-button:hover {
-          background: rgba(0, 255, 136, 0.15);
-          border-color: #00ff88;
-          box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-        }
-
-        .contact-button.active {
-          background: rgba(0, 255, 136, 0.2);
-          border-color: #00ff88;
         }
       `}</style>
 
       <div
         style={{
-          maxWidth: "90rem",
+          maxWidth: "90rem", // Increased for 5+ items
           margin: "0 auto",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0.75rem 1.5rem",
-          position: "relative",
         }}
       >
         <div
@@ -662,7 +572,7 @@ function Header({ active, onJump, sections }: HeaderProps) {
           Debbie Brooks — Web Augmented
         </div>
         
-        <nav style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <nav>
           <div
             style={{
               display: "flex",
@@ -684,6 +594,7 @@ function Header({ active, onJump, sections }: HeaderProps) {
                   onClick={() => onJump(i)}
                   className={`nav-mask ${isActive ? 'is-active' : ''}`}
                   style={{
+                    // Active state border/glow logic
                     borderColor: isActive ? 'white' : 'transparent',
                   }}
                 >
@@ -691,93 +602,18 @@ function Header({ active, onJump, sections }: HeaderProps) {
                     className="lift-text"
                     style={{
                       color: isActive ? color : "rgba(255,255,255,0.7)",
+                      // The 'mask' color shadow
                       textShadow: `0 1.5rem ${color}`,
                       fontWeight: isActive ? "bold" : "normal"
                     }}
                   >
+                    {/* Simplified labels for nav if they are too long */}
                     {label.split(' - ')[0]} 
                   </span>
                 </div>
               );
             })}
           </div>
-
-          {/* Contact Button */}
-          <button
-            className={`contact-button ${showContact ? 'active' : ''}`}
-            onClick={() => setShowContact(!showContact)}
-          >
-            Contact ✦
-          </button>
-
-          {/* Contact Dropdown */}
-          {showContact && (
-            <div className="contact-dropdown">
-              <div style={{ 
-                marginBottom: "0.75rem", 
-                paddingBottom: "0.75rem", 
-                borderBottom: "1px solid rgba(255,255,255,0.1)",
-                fontFamily: "monospace",
-                fontSize: "0.75rem",
-                letterSpacing: "0.1em",
-                color: "rgba(255,255,255,0.5)",
-                textTransform: "uppercase"
-              }}>
-                Get in touch
-              </div>
-
-              <a 
-                href="mailto:your.email@example.com" 
-                className="contact-item"
-                onClick={() => setShowContact(false)}
-              >
-                <span className="contact-icon">✉</span>
-                <span className="contact-label">Email</span>
-              </a>
-
-              <a 
-                href="https://wa.me/YOUR_NUMBER" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-item"
-                onClick={() => setShowContact(false)}
-              >
-                <span className="contact-icon">💬</span>
-                <span className="contact-label">WhatsApp</span>
-              </a>
-
-              <a 
-                href="tel:YOUR_NUMBER" 
-                className="contact-item"
-                onClick={() => setShowContact(false)}
-              >
-                <span className="contact-icon">📱</span>
-                <span className="contact-label">Mobile</span>
-              </a>
-
-              <a 
-                href="https://www.linkedin.com/in/debbie-brooks-8bb5664/" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-item"
-                onClick={() => setShowContact(false)}
-              >
-                <span className="contact-icon">💼</span>
-                <span className="contact-label">LinkedIn</span>
-              </a>
-
-              <a 
-                href="https://cal.com/debbie-brooks-foykr6" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-item"
-                onClick={() => setShowContact(false)}
-              >
-                <span className="contact-icon">📅</span>
-                <span className="contact-label">Book a Call</span>
-              </a>
-            </div>
-          )}
         </nav>
       </div>
     </header>
@@ -788,17 +624,20 @@ function Header({ active, onJump, sections }: HeaderProps) {
 /* ---------- Page ---------- */
 
 export default function Page() {
+
   const [active, setActive] = useState(0)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isOverWall, setIsOverWall] = useState(false)
-  // const [showInstructions, setShowInstructions] = useState(true)
-  // const [bubbleActive, setBubbleActive] = useState(false)
+  const [showInstructions, setShowInstructions] = useState(true)
+  const [bubbleActive, setBubbleActive] = useState(false)
   const [phase, setPhase] = useState<Phase>("intro")
   const [introOpacity, setIntroOpacity] = useState(0)
   const [introSecondsLeft, setIntroSecondsLeft] =
     useState<number>(INTRO_SECONDS)
 
   const [startIntro, setStartIntro] = useState(false)
+  const eventSourceRef = useRef<HTMLDivElement | null>(null)
+
 
 
   // Art section slider state
@@ -1000,14 +839,14 @@ export default function Page() {
           transition: "opacity 1.5s ease-in-out",
         }}
       >
-          <group scale={0.7} position={[0, 0, 0]}> 
+          {/* <group scale={0.7} position={[0, 0, 0]}> 
           
             <TerminalTypewriter 
               text={BIO_TEXT}
               speed={25}
             />
-          </group>
-        {/* {!startIntro && 
+          </group> */}
+        {!startIntro && 
         <GLBOverlayLoader 
             onStart={() => setStartIntro(true)}
             typewriterPosition={{ 
@@ -1015,7 +854,7 @@ export default function Page() {
               left: '13%',
               right: '10%' // constrains width
             }}
-        />} */}
+        />}
 
         <Canvas
           camera={{ position: [0, 0.5, 4], fov: 45 }}
@@ -1096,7 +935,23 @@ export default function Page() {
       </div>
 
       {/* Main landing 3D scene */}
-      <div
+
+      {/* Event source for @react-three/fiber */}
+      <div ref={eventSourceRef} />
+
+      {/* 3D / environment scene */}
+      <Scene
+        active={active}
+        scrollProgress={scrollProgress}
+        phase={phase}
+        eventSourceEl={eventSourceRef.current}
+        isOverWall={isOverWall}
+        setIsOverWall={setIsOverWall}
+      />
+
+
+
+      {/* <div
         style={{
           position: "fixed",
           inset: 0,
@@ -1127,7 +982,7 @@ export default function Page() {
         </Canvas>
 
         <CursorSparkle enabled={isOverWall} />
-      </div>
+      </div> */}
 
       {/* Background for later sections */}
       <div
@@ -1191,7 +1046,7 @@ export default function Page() {
          if (isWorkSection) {
             content = (
               <div className="w-full h-full">
-                 <ArchivePortal activeSection={active} />
+                <ArchivePortal />
               </div>
             )
           }

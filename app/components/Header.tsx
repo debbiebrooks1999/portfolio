@@ -72,7 +72,7 @@ export default function Header({ active, onJump, sections }: HeaderProps) {
           {/* Brand */}
           <div className="flex items-center gap-2 min-w-0">
             <span className="inline-block h-8 w-8 rounded-lg bg-foreground/90"></span>
-            <span className="font-semibold tracking-tight truncate">Web Augmented Ltd</span>
+            <span className="font-semibold tracking-tight truncate">Web Augmented Ltd - WebXR | Three.js | VAT Systems | Shader Programming | Emerging Web Tech</span>
           </div>
 
           {/* Desktop nav */}

@@ -37,6 +37,7 @@ export default function PuddleCitySurface({
   
   position = [0, -0.45, 1],
   rotation = [-Math.PI / 2.5, 0, -Math.PI / 2],
+
   size = [10, 10],
 
   waterNormalUrl = "/textures/waternormals.jpg",

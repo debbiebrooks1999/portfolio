@@ -25,19 +25,122 @@ export type ArtSlide = {
   body: string
 }
 
+/* ---------- Archive / Portfolio Projects ---------- */
+
+export type Complexity = "low" | "medium" | "high"
+
+export type Project = {
+  id: string
+  title: string
+  year: number
+  thumbnail?: string
+  tags?: string[]
+  description?: string
+  techStack?: string[]
+  client?: string
+  agency?: string
+  era?: "current" | "recent" | "legacy"
+  complexity?: Complexity
+  featured?: boolean
+  link?: string
+  video?: string
+  images?: string[]
+  qrCode?: string
+}
+
+/**
+ * IMPORTANT:
+ * - Keep paths consistent (prefer "/archive/..." & "/qr/..." instead of "./archive/...")
+ * - Empty string counts as "no data". Use "" only if you really want the UI to hide it.
+ */
+export const PROJECTS: Project[] = [
+  // === CURRENT ERA (2023-2025) ===
+  {
+    id: "volvo-vr-experience",
+    title: "Volvo VR Showroom",
+    year: 2025,
+    thumbnail: "/archive/volvo.png",
+    tags: ["WebXR", "React Three Fiber", "VR", "Meta Quest"],
+    description:
+      "Immersive 360° VR experience with hotspot navigation and video spheres for Meta Quest devices.",
+    techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
+    client: "Automotive",
+    agency: "NDA",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "dreamwheel-ar-portal",
+    title: "New York Dreamwheel AR Tourism",
+    year: 2025,
+    thumbnail: "/archive/NJLoading.png",
+    video: "/archive/dreamwheel.mp4",
+    qrCode: "/qr/NJ_Dream_Wheel-QR_Code.png",
+    tags: ["AR", "WebXR", "QR Portals", "Three.js"],
+    description:
+      "AR/VR experiences for Queenstown tourism with QR code portal system for gondola attractions.",
+    techStack: ["Three.js", "WebXR", "AR.js", "React"],
+    client: "Tourism",
+    agency: "Magic Memories",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "aquarium-ar-kids",
+    title: "Aquarium AR Kids Experience",
+    year: 2025,
+    thumbnail: "/archive/sealifeShark.PNG",
+    qrCode: "/qr/dreamwheel-qr.png",
+    tags: ["AR", "WebXR", "QR Portals", "Three.js"],
+    description:
+      "AR experiences for various aquarium attractions, animated models, particles and facts overlays with QR code portal system for kids.",
+    techStack: ["Three.js", "WebXR", "AR.js", "React"],
+    client: "Tourism",
+    agency: "Magic Memories",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "national-gallery-sound",
+    title: "Sensing The Unseen - National Gallery",
+    year: 2020,
+    thumbnail: "/archive/icon1.png",
+    tags: ["WebXR", "Virtual Tour", "Audio", "Three.js"],
+    video: "/archive/NG_Sensing the unseen_cropped.mp4",
+    description:
+      "Immersive virtual tour experience for the National Gallery London with spatial audio.",
+    techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
+    client: "Cultural Institution",
+    agency: "National Gallery",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "https://www.nationalgallery.org.uk/visiting/virtual-tours/sensing-the-unseen-at-home",
+  },
+
+  // ✅ Paste the rest of your existing PROJECTS entries here unchanged
+  // (everything from your archive file, down to Sky Store, etc.)
+]
+
 /* ---------- Configuration Constants ---------- */
 
-export const INTRO_SECONDS = 300
+export const INTRO_SECONDS = 2
 
 export const CAMERA_CONFIG = {
-  INTRO_SCENE_DELAY: 1000, // 1 second delay
-  INTRO_DURATION: 10.0, // 10 seconds
-  INTRO_START_Z: -50, // Start 50 units back
-  INTRO_TARGET_Z: 3, // End at camera position
-  INTRO_START_Y: 35, // Start 35 units up
-  INTRO_TARGET_Y: 0, // End at camera position
-  ROTATION_AMOUNT: 0.05, // ±15 degrees rotation range
-  LERP_FACTOR: 0.05, // Camera smoothing factor
+  INTRO_SCENE_DELAY: 1000,
+  INTRO_DURATION: 10.0,
+  INTRO_START_Z: -50,
+  INTRO_TARGET_Z: 3,
+  INTRO_START_Y: 35,
+  INTRO_TARGET_Y: 0,
+  ROTATION_AMOUNT: 0.05,
+  LERP_FACTOR: 0.05,
 }
 
 /* ---------- Color Palettes ---------- */
@@ -54,30 +157,12 @@ export const ACCENTS = [
 /* ---------- Music Videos ---------- */
 
 export const musicVideos: MusicVideo[] = [
-  {
-    src: "/videos/music1.mp4",
-    title: "Neon Drift",
-  },
-  {
-    src: "/videos/music2.mp4",
-    title: "Rain City Loops",
-  },
-  {
-    src: "/videos/music3.mp4",
-    title: "Glitch Bloom",
-  },
-  {
-    src: "/videos/music4.mp4",
-    title: "Analog Ghosts",
-  },
-  {
-    src: "/videos/music5.mp4",
-    title: "Chromatic Pulse",
-  },
-  {
-    src: "/videos/music6.mp4",
-    title: "Midnight Debug",
-  },
+  { src: "/videos/music1.mp4", title: "Neon Drift" },
+  { src: "/videos/music2.mp4", title: "Rain City Loops" },
+  { src: "/videos/music3.mp4", title: "Glitch Bloom" },
+  { src: "/videos/music4.mp4", title: "Analog Ghosts" },
+  { src: "/videos/music5.mp4", title: "Chromatic Pulse" },
+  { src: "/videos/music6.mp4", title: "Midnight Debug" },
 ]
 
 /* ---------- Art Slides ---------- */

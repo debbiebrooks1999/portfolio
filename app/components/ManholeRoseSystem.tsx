@@ -51,12 +51,15 @@ export function getRandomScale() {
 export const createRoseMaterial = (vatTexture: THREE.Texture | null) => {
   return new THREE.ShaderMaterial({
     uniforms: {
-      uGreen1: { value: new THREE.Color(0x00ff88) },
-      uGreen2: { value: new THREE.Color(0x00ffcc) },
-      uRedLight: { value: new THREE.Color(0xff00ff) },
-      uRedMid: { value: new THREE.Color(0xff0088) },
-      uDeepRedLight: { value: new THREE.Color(0x8800ff) },
-      uDeepRedDark: { value: new THREE.Color(0x0088ff) },
+      // R1: Green
+      uGreen1: { value: new THREE.Color(0x325825) },
+      uGreen2: { value: new THREE.Color(0x4f802b) },
+      // R2: Red (bright red)
+      uRedLight: { value: new THREE.Color(0xff3333) },
+      uRedMid: { value: new THREE.Color(0xcc2222) },
+      // R3: Deep Red (darker, more dramatic)
+      uDeepRedLight: { value: new THREE.Color(0xdd2211) },
+      uDeepRedDark: { value: new THREE.Color(0x660000) },
       uFrame: { value: 0.0 },
       uVatPosTex: { value: vatTexture },
       uFrameCount: { value: VAT_LAST_FRAME + 1.0 },
@@ -99,124 +102,76 @@ export const createRoseMaterial = (vatTexture: THREE.Texture | null) => {
       varying vec2 vUv;
       varying vec3 vNormal;
       varying vec3 vPosition;
-      uniform vec3 uGreen1, uGreen2, uRedLight, uRedMid, uDeepRedLight, uDeepRedDark;
+      
+      uniform vec3 uGreen1;
+      uniform vec3 uGreen2;
+      uniform vec3 uRedLight;
+      uniform vec3 uRedMid;
+      uniform vec3 uDeepRedLight;
+      uniform vec3 uDeepRedDark;
       uniform float uRoseType;
       uniform float uTime;
 
-      float random(vec2 st) {
-        return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-      }
-
-      float noise(vec2 st) {
-        vec2 i = floor(st);
-        vec2 f = fract(st);
-        float a = random(i);
-        float b = random(i + vec2(1.0, 0.0));
-        float c = random(i + vec2(0.0, 1.0));
-        float d = random(i + vec2(1.0, 1.0));
-        vec2 u = f * f * (3.0 - 2.0 * f);
-        return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-      }
-
       void main() {
         vec3 baseColor;
-        
-        float noiseValue = noise(vUv * 10.0 + uTime * 0.5);
-        float pulseNoise = sin(uTime * 2.0 + vUv.y * 5.0) * 0.5 + 0.5;
 
         if (uRoseType < 1.5) {
+          // R1: Green gradient
           float t = smoothstep(0.0, 1.0, vUv.y);
           baseColor = mix(uGreen1, uGreen2, t);
-          baseColor *= 1.3;
+          
         } else if (uRoseType < 2.5) {
-          float petalId = fract(sin(dot(vPosition.xz, vec2(12.9898, 78.233))) * 43758.5453);
+          // R2: Red with variation
+          float colorVariation = vUv.y * 0.7 + vUv.x * 0.3;
+          float variation = sin(vUv.x * 8.0) * cos(vUv.y * 8.0) * 0.15 + 0.5;
+          colorVariation = mix(colorVariation, variation, 0.2);
+          baseColor = mix(uRedMid, uRedLight, colorVariation);
           
-          vec3 magenta = vec3(0.7, 0.0, 0.7);
-          vec3 hotPink = vec3(0.8, 0.0, 0.4);
-          vec3 orange = vec3(1.0, 0.4, 0.0);
-          vec3 darkYellow = vec3(0.7, 0.5, 0.0);
-          
-          vec3 petalColor;
-          if (petalId < 0.25) {
-            petalColor = magenta;
-          } else if (petalId < 0.5) {
-            petalColor = hotPink;
-          } else if (petalId < 0.75) {
-            petalColor = orange;
-          } else {
-            petalColor = darkYellow;
-          }
-          
-          float heightVariation = vUv.y * 0.3;
-          baseColor = petalColor * (0.9 + heightVariation);
-          
-          float edgeDetect = smoothstep(0.1, 0.2, vUv.x) * smoothstep(0.9, 0.8, vUv.x);
-          baseColor += vec3(0.15) * (1.0 - edgeDetect);
-          
-          baseColor *= 1.3;
         } else {
-          float petalId = fract(sin(dot(vPosition.xz, vec2(12.9898, 78.233))) * 43758.5453);
+          // R3: Deep Red with DARK base
+          // More dramatic gradient - darker at base
+          float heightGradient = smoothstep(0.0, 0.8, vUv.y);
           
-          vec3 electricBlue = vec3(0.0, 0.4, 0.8);
-          vec3 deepPurple = vec3(0.5, 0.0, 0.8);
-          vec3 cyan = vec3(0.0, 0.7, 0.8);
-          vec3 violet = vec3(0.6, 0.0, 0.8);
-          vec3 hotPink = vec3(0.8, 0.0, 0.5);
+          // Add variation
+          float colorVariation = vUv.y * 0.5 + vUv.x * 0.2;
+          float variation = sin(vUv.x * 10.0) * cos(vUv.y * 10.0) * 0.1 + 0.5;
+          colorVariation = mix(colorVariation, variation, 0.3);
           
-          vec3 petalColor;
-          if (petalId < 0.2) {
-            petalColor = electricBlue;
-          } else if (petalId < 0.4) {
-            petalColor = deepPurple;
-          } else if (petalId < 0.6) {
-            petalColor = cyan;
-          } else if (petalId < 0.8) {
-            petalColor = violet;
-          } else {
-            petalColor = hotPink;
-          }
-          
-          float heightGradient = smoothstep(0.0, 1.0, vUv.y);
-          baseColor = petalColor * (0.8 + heightGradient * 0.3);
-          
-          float edgeDetect = smoothstep(0.1, 0.2, vUv.x) * smoothstep(0.9, 0.8, vUv.x);
-          baseColor += vec3(0.15) * (1.0 - edgeDetect);
-          
-          baseColor *= 1.3;
+          // Mix: dark base → deep red top
+          vec3 gradientColor = mix(uDeepRedDark, uDeepRedLight, heightGradient);
+          baseColor = mix(gradientColor * 0.8, gradientColor, colorVariation);
         }
 
+        // Enhanced lighting for all roses
         vec3 normal = normalize(vNormal);
+        
         vec3 lightDir1 = normalize(vec3(1.0, 1.5, 1.0));
         float diffuse1 = max(dot(normal, lightDir1), 0.0);
+        
         vec3 lightDir2 = normalize(vec3(-0.8, 0.3, -1.0));
         float diffuse2 = max(dot(normal, lightDir2), 0.0) * 0.4;
         
-        float ao = 0.7 + 0.3 * (vUv.y * 0.5 + 0.5);
+        // Stronger ambient occlusion for R3 (more dramatic shadows)
+        float ao = 0.3 + 0.7 * (vUv.y * 0.5 + 0.5);
         if (uRoseType > 2.5) {
-          ao = 0.7 + 0.3 * (vUv.y * 0.6 + 0.4);
+          ao = 0.2 + 0.8 * (vUv.y * 0.6 + 0.4); // Darker shadows for R3
         }
         
         vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
         float rim = 1.0 - max(dot(viewDir, normal), 0.0);
-        rim = pow(rim, 2.5) * 0.4;
+        rim = pow(rim, 3.0) * 0.3;
         
-        float totalLight = diffuse1 * 0.6 + diffuse2 + 0.5;
+        float totalLight = diffuse1 * 0.7 + diffuse2 + 0.4;
         totalLight *= ao;
-        totalLight = clamp(totalLight, 0.7, 1.2);
+        totalLight = clamp(totalLight, 0.3, 1.2);
         
         vec3 finalColor = baseColor * totalLight;
         
-        if (uRoseType > 1.5) {
-          float noiseIntensity = noiseValue * 0.1 + pulseNoise * 0.05;
-          finalColor += finalColor * noiseIntensity;
-        }
-        
+        // Warm rim for reds, green rim for green
         if (uRoseType < 1.5) {
-          finalColor += rim * vec3(0.0, 1.5, 1.0) * 0.8;
-        } else if (uRoseType < 2.5) {
-          finalColor += rim * vec3(1.5, 0.5, 0.0) * 0.8;
+          finalColor += rim * vec3(0.7, 1.0, 0.7); // Green rim
         } else {
-          finalColor += rim * vec3(1.0, 1.0, 1.5) * 0.8;
+          finalColor += rim * vec3(1.0, 0.6, 0.5); // Warm red rim
         }
         
         gl_FragColor = vec4(finalColor, 1.0);
