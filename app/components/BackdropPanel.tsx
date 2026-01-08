@@ -5,10 +5,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useThree, useLoader, useFrame } from "@react-three/fiber"
 import { Decal, useTexture, useVideoTexture } from "@react-three/drei"
 import { onModelClick, onHoverModel } from "../events"
-import { BillboardSkyscraper} from "./BillboardSkyscraper"
-import GenericModelLoader from "./GenericModelLoader"
-import { PCDModel } from "./PCDModel";
-import SteamToCylinder from "./SteamToCylinder"
+// import { BillboardSkyscraper} from "./BillboardSkyscraper"
+// import GenericModelLoader from "./GenericModelLoader"
+// import { PCDModel } from "./PCDModel";
+// import SteamToCylinder from "./SteamToCylinder"
 
 
 type DecalInfo = {
@@ -39,8 +39,8 @@ type Props = {
 }
 
 const DEFAULT_NEON = 0x39ff14
-const MANHOLE_POSITION: [number, number, number] = [-2, -0.7, 0.1]
-const HYDRANT_POSITION: [number, number, number] = [3.9, -1, 0]
+// const MANHOLE_POSITION: [number, number, number] = [-2, -0.7, 0.1]
+// const HYDRANT_POSITION: [number, number, number] = [3.9, -1, 0]
 const degToRad = (deg: number) => (deg * Math.PI) / 180
 
 type WaterBubblesProps = {

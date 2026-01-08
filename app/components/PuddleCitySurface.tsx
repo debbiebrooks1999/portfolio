@@ -6,6 +6,7 @@ import { MeshReflectorMaterial } from "@react-three/drei"
 import { EXRLoader } from "three-stdlib"
 
 type PuddleCitySurfaceProps = {
+
   position?: [number, number, number]
   rotation?: [number, number, number]
   size?: [number, number]
@@ -54,13 +55,13 @@ export default function PuddleCitySurface({
   hoverDiscRadius = 0.3,
   hoverDiscColor = "#ff0000",
 }: PuddleCitySurfaceProps) {
+
   const asphaltRef = React.useRef<THREE.Mesh>(null)
   const hoverDiscRef = React.useRef<THREE.Mesh>(null)
   const raycaster = React.useRef(new THREE.Raycaster())
   const pointer = React.useRef(new THREE.Vector2())
 
   const { camera, gl, size: viewport } = useThree()
-
 
   /* ------------- Texture Loading ------------- */
   const asphaltDiffuse = useOptionalTexture(asphaltDiffuseUrl)
@@ -89,7 +90,6 @@ export default function PuddleCitySurface({
     waterNormal.wrapS = waterNormal.wrapT = THREE.RepeatWrapping
     waterNormal.repeat.set(6, 6)
   }, [waterNormal])
-
 
   // Track mouse movement
   React.useEffect(() => {
@@ -176,7 +176,9 @@ export default function PuddleCitySurface({
       </mesh>
 
       {/* Red hover disc - Now used only for simple position tracking */}
-      {showHoverDisc && (
+
+      {/* {showHoverDisc && (
+
         <mesh
           ref={hoverDiscRef}
           rotation={rotation}
@@ -191,7 +193,9 @@ export default function PuddleCitySurface({
             side={THREE.DoubleSide}
           />
         </mesh>
-      )}
+
+      )} */}
+
     </group>
   )
 }

@@ -65,12 +65,15 @@ type VATRoseSystemProps = {
   showCursor?: boolean
   /** Enable/disable system entirely. Default true */
   enabled?: boolean
+  /** On mobile/touch: how long roses stay active after tap. Default 3.0 */
+  tapDuration?: number
 }
 
 /**
  * VAT Rose System (R3F)
- * - Hover over the ground plane to spawn “zones”
- * - Zones grow while hovered, pause briefly, then shrink & clean up
+ * - Desktop: Hover over the ground plane to spawn "zones"
+ * - Mobile: Tap to spawn zones that auto-recede after tapDuration
+ * - Zones grow while active, pause briefly, then shrink & clean up
  * - Uses /Rose.glb + /Rose_pos.exr
  */
 export default function VATRoseSystem({
@@ -81,6 +84,7 @@ export default function VATRoseSystem({
   recedeDelay = 2.0,
   showCursor = false,
   enabled = true,
+  tapDuration = 3.0,
 }: VATRoseSystemProps) {
   const { gl, scene } = useThree()
 
@@ -154,12 +158,18 @@ export default function VATRoseSystem({
   const activeZonesRef = useRef<Zone[]>([])
   const currentZoneRef = useRef<{ position: { x: number; y: number; z: number }; isNew: true } | Zone | null>(null)
   const hoverTimerRef = useRef(0)
+  const isTouchDevice = useRef(false)
 
   // Cursor disc
   const cursorDiscRef = useRef<THREE.Mesh>(null)
 
   // Ground plane ref for pointer events
   const groundRef = useRef<THREE.Mesh>(null)
+
+  // Detect touch device on mount
+  useEffect(() => {
+    isTouchDevice.current = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  }, [])
 
   function createRoseMaterial(tex: THREE.DataTexture | null) {
     return new THREE.ShaderMaterial({
@@ -380,16 +390,48 @@ export default function VATRoseSystem({
     return null
   }
 
-  // Pointer events on the ground plane
-  const onPointerMove = (e: any) => {
+  // Handle tap/click (works on both mobile and desktop)
+  const onPointerDown = (e: any) => {
     if (!enabled) return
-    if (!groundRef.current) return
+    if (!roseGeometry) return
 
     const point = e.point as THREE.Vector3
 
-    if (cursorDiscRef.current) {
+    // Check if there's a nearby zone
+    const nearby = findNearbyZone({ x: point.x, z: point.z }, zoneRadius)
+    
+    if (nearby) {
+      // Reactivate existing zone
+      nearby.isActive = true
+      nearby.timeSinceActive = 0
+    } else {
+      // Create new zone immediately on tap
+      const newZone: Zone = {
+        position: { x: point.x, y: point.y, z: point.z },
+        roses: createRoseGroup({ x: point.x, y: point.y, z: point.z }, roseGeometry, vatTex, scene),
+        isActive: true,
+        timeSinceActive: 0,
+      }
+      activeZonesRef.current.push(newZone)
+    }
+
+    // On touch devices, set a timer to deactivate
+    if (isTouchDevice.current) {
+      // This will be handled in useFrame
+    }
+  }
+
+  // Pointer events on the ground plane (for desktop hover)
+  const onPointerMove = (e: any) => {
+    if (!enabled) return
+    if (!groundRef.current) return
+    if (isTouchDevice.current) return // Skip hover on touch devices
+
+    const point = e.point as THREE.Vector3
+
+    if (cursorDiscRef.current && showCursor) {
       cursorDiscRef.current.position.set(point.x, point.y + 0.05, point.z)
-      cursorDiscRef.current.visible = showCursor
+      cursorDiscRef.current.visible = true
     }
 
     const nearby = findNearbyZone({ x: point.x, z: point.z }, zoneRadius)
@@ -409,6 +451,8 @@ export default function VATRoseSystem({
 
   const onPointerLeave = () => {
     if (!enabled) return
+    if (isTouchDevice.current) return // Skip on touch devices
+    
     if (cursorDiscRef.current) cursorDiscRef.current.visible = false
     currentZoneRef.current = null
     activeZonesRef.current.forEach((z) => (z.isActive = false))
@@ -421,22 +465,25 @@ export default function VATRoseSystem({
 
     const now = clock.getElapsedTime()
 
-    const cz = currentZoneRef.current as any
-    if (cz && cz.isNew && roseGeometry) {
-      hoverTimerRef.current += delta
-      if (hoverTimerRef.current >= hoverDelay) {
-        const newZone: Zone = {
-          position: cz.position,
-          roses: createRoseGroup(cz.position, roseGeometry, vatTex, scene),
-          isActive: true,
-          timeSinceActive: 0,
+    // Desktop hover behavior
+    if (!isTouchDevice.current) {
+      const cz = currentZoneRef.current as any
+      if (cz && cz.isNew && roseGeometry) {
+        hoverTimerRef.current += delta
+        if (hoverTimerRef.current >= hoverDelay) {
+          const newZone: Zone = {
+            position: cz.position,
+            roses: createRoseGroup(cz.position, roseGeometry, vatTex, scene),
+            isActive: true,
+            timeSinceActive: 0,
+          }
+          activeZonesRef.current.push(newZone)
+          currentZoneRef.current = newZone
+          hoverTimerRef.current = 0
         }
-        activeZonesRef.current.push(newZone)
-        currentZoneRef.current = newZone
+      } else {
         hoverTimerRef.current = 0
       }
-    } else {
-      hoverTimerRef.current = 0
     }
 
     // Update all zones
@@ -445,6 +492,15 @@ export default function VATRoseSystem({
     zones.forEach((zone) => {
       if (zone.isActive) zone.timeSinceActive = 0
       else zone.timeSinceActive += delta
+
+      // On touch devices, auto-deactivate after tapDuration
+      if (isTouchDevice.current && zone.isActive && zone.timeSinceActive === 0) {
+        // Check if we need to start the deactivation timer
+        const allRosesFullyGrown = zone.roses.every((r) => r.currentFrame >= r.endFrame)
+        if (allRosesFullyGrown) {
+          zone.isActive = false
+        }
+      }
 
       zone.roses.forEach((rose) => {
         const mat = rose.mesh.material as THREE.ShaderMaterial
@@ -507,6 +563,7 @@ export default function VATRoseSystem({
         position={[0, groundY, 0]}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
+        onPointerDown={onPointerDown}
       >
         <planeGeometry args={[size, size]} />
         <meshStandardMaterial
@@ -520,7 +577,7 @@ export default function VATRoseSystem({
         />
       </mesh>
 
-      {/* Cursor disc */}
+      {/* Cursor disc (only shown on desktop with showCursor prop) */}
       <mesh
         ref={cursorDiscRef}
         rotation-x={-Math.PI / 2}

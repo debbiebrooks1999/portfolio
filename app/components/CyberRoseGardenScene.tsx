@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState, Suspense, useMemo } from "react"
+import React, { useState, Suspense, useRef } from "react"
 import * as THREE from "three"
-import { Canvas } from "@react-three/fiber"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { Environment, OrbitControls, Preload } from "@react-three/drei"
 
 // Components
@@ -11,6 +11,26 @@ import PuddleCitySurface from "./PuddleCitySurface"
 import { SprayCursor3D } from "./SprayCursor3D"
 import { RoseGarden } from "./RoseGarden" // New component with recede logic
 import { CyberpunkSkyline } from "./CyberpunkSkyline"
+
+function CameraLogger({ everyMs = 500 }: { everyMs?: number }) {
+  const { camera } = useThree()
+  const last = useRef(0)
+
+  useFrame(() => {
+    const now = performance.now()
+    if (now - last.current < everyMs) return
+    last.current = now
+
+    console.log(
+      "[camera]",
+      "x:", camera.position.x.toFixed(2),
+      "y:", camera.position.y.toFixed(2),
+      "z:", camera.position.z.toFixed(2)
+    )
+  })
+
+  return null
+}
 
 export default function CyberpunkPage() {
   // Shared state: the 3D coordinate where roses should spawn
@@ -25,6 +45,7 @@ export default function CyberpunkPage() {
         dpr={[1, 2]} // Performance optimization for high-res screens
       >
         <Suspense fallback={null}>
+          <CameraLogger />
           {/* 1. Environment & Lighting */}
           <color attach="background" args={["#05000a"]} />
           <fog attach="fog" args={["#05000a", 10, 50]} />
@@ -70,6 +91,7 @@ export default function CyberpunkPage() {
           <OrbitControls 
             makeDefault 
             enablePan={false}
+            enableZoom={true}
             maxPolarAngle={Math.PI / 1.8} // Prevent looking under the floor
             minDistance={5}
             maxDistance={25}

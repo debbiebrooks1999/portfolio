@@ -14,6 +14,7 @@ type Slide = {
 type ShaderFrameProps = {
   title?: string
   subtitle?: string
+  isMobile: boolean
   colors?: [string, string, string, string]
   initial?: {
     scale: number
@@ -25,14 +26,28 @@ type ShaderFrameProps = {
     bx: number
     by: number
   }
-  showControls?: boolean
   className?: string
-  /** Optional slide deck – if length > 1 and no children, navigation appears */
   slides?: Slide[]
-  /** Show the default right-hand text column in the built-in layout */
   showText?: boolean
-  /** Custom inner layout. If provided, replaces the default 3-column layout entirely. */
   children?: React.ReactNode
+
+  /** Height of fixed header (e.g. "64px"). Only used when embedded={false}. */
+  headerHeight?: string
+
+  /** Panel height as portion of viewport (e.g. 0.9 => 90% vh). Only used when embedded={false}. */
+  viewportPortion?: number
+
+  /**
+   * If ShaderFrame is rendered inside a full-height section / scroll container (your scroll-snap layout),
+   * set embedded=true so it fills its parent and does NOT apply internal header offsets.
+   */
+  embedded?: boolean
+
+  /** When this value changes, the content fade timer resets (use section index / id). */
+  activeKey?: string | number
+
+  /** Delay before content fades in (ms). Default 3000. */
+  contentDelayMs?: number
 }
 
 export default function ShaderFrame({
@@ -49,27 +64,18 @@ export default function ShaderFrame({
     bx: 1,
     by: 1,
   },
-  showControls = false,
   className = "",
   slides,
   showText = true,
   children,
+  isMobile,
+  headerHeight = "64px",
+  viewportPortion = 0.9,
+  embedded = true,
+  activeKey,
+  contentDelayMs = 3000,
 }: ShaderFrameProps) {
-  /* ---------- Mobile fallback ---------- */
-
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const m =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      ) || window.innerWidth < 768
-    setIsMobile(m)
-  }, [])
-
   /* ---------- Shader controls ---------- */
-
   const [scale, setScale] = useState(initial.scale)
   const [speed, setSpeed] = useState(initial.speed)
   const [ax, setAx] = useState(initial.ax)
@@ -79,8 +85,15 @@ export default function ShaderFrame({
   const [bx, setBx] = useState(initial.bx)
   const [by, setBy] = useState(initial.by)
 
-  /* ---------- Slides state ---------- */
+  /* ---------- Content fade ---------- */
+  const [contentVisible, setContentVisible] = useState(false)
+  useEffect(() => {
+    setContentVisible(false)
+    const t = window.setTimeout(() => setContentVisible(true), contentDelayMs)
+    return () => window.clearTimeout(t)
+  }, [activeKey, contentDelayMs])
 
+  /* ---------- Slides ---------- */
   const [slideIndex, setSlideIndex] = useState(0)
   const hasSlides = (slides?.length ?? 0) > 0
   const hasMultipleSlides = (slides?.length ?? 0) > 1 && !children
@@ -97,16 +110,14 @@ export default function ShaderFrame({
   }
 
   /* ---------- Three.js refs ---------- */
-
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const sceneRef = useRef<THREE.Scene | null>(null)
-  const cameraRef = useRef<THREE.OrthographicCamera | null>(null)
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
   const materialRef = useRef<THREE.ShaderMaterial | null>(null)
+  const sceneRef = useRef<THREE.Scene | null>(null)
+  const cameraRef = useRef<THREE.OrthographicCamera | null>(null)
 
   /* ---------- Shaders ---------- */
-
   const vertexShader = useMemo(
     () => `
       varying vec2 vUv;
@@ -148,11 +159,13 @@ export default function ShaderFrame({
         float t = time * speed;
         float S = sin(t * .005);
         float C = cos(t * .005);
+
         vec2 v1 = vec2(cheapNoise(vec3(st, 2.)), cheapNoise(vec3(st, 1.)));
         vec2 v2 = vec2(
           cheapNoise(vec3(st + bx*v1 + vec2(C * 1.7, S * 9.2), 0.15 * t)),
           cheapNoise(vec3(st + by*v1 + vec2(S * 8.3, C * 2.8), 0.126 * t))
         );
+
         float n = .5 + .5 * cheapNoise(vec3(st + v2, 0.));
         vec3 color = mix(color1, color2, clamp((n*n)*8.,0.0,1.0));
         color = mix(color, color3, clamp(length(v1),0.0,1.0));
@@ -164,8 +177,7 @@ export default function ShaderFrame({
     []
   )
 
-  /* ---------- Init three ---------- */
-
+  /* ---------- Init three (desktop only) ---------- */
   useEffect(() => {
     if (isMobile) return
 
@@ -227,12 +239,11 @@ export default function ShaderFrame({
     materialRef.current = material
 
     const resize = () => {
-      if (!renderer || !container) return
-      const width = container.clientWidth
-      const height = container.clientHeight
-      renderer.setSize(width, height, false)
+      const w = container.clientWidth
+      const h = container.clientHeight
+      renderer.setSize(w, h, false)
       renderer.setPixelRatio(window.devicePixelRatio || 1)
-      material.uniforms.resolution.value.set(width, height)
+      material.uniforms.resolution.value.set(w, h)
     }
 
     resize()
@@ -241,8 +252,7 @@ export default function ShaderFrame({
     let raf = 0
     const loop = () => {
       raf = requestAnimationFrame(loop)
-      const time = performance.now() / 1000.0
-      material.uniforms.time.value = time
+      material.uniforms.time.value = performance.now() / 1000
       renderer.render(scene, camera)
     }
     raf = requestAnimationFrame(loop)
@@ -257,8 +267,7 @@ export default function ShaderFrame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, vertexShader, fragmentShader, colors.join("")])
 
-  /* ---------- Push control updates ---------- */
-
+  /* ---------- Push uniform updates ---------- */
   useEffect(() => {
     if (!materialRef.current) return
     const u = materialRef.current.uniforms
@@ -272,106 +281,115 @@ export default function ShaderFrame({
     u.by.value = by
   }, [scale, speed, ax, ay, az, aw, bx, by])
 
-  /* ---------- Resolve content from slide/main props ---------- */
-
+  /* ---------- Resolve deck ---------- */
   const resolvedTitle = currentSlide?.title ?? title
   const resolvedSubtitle = currentSlide?.subtitle ?? subtitle
   const resolvedImageSrc = currentSlide?.imageSrc ?? "/city.png"
   const resolvedVideoSrc = currentSlide?.videoSrc ?? "/videos/video.mp4"
-  const resolvedQrSrc =
-    currentSlide?.qrSrc ?? "/qr/Xcited_Timeline-QR_Code.png"
+  const resolvedQrSrc = currentSlide?.qrSrc ?? "/qr/Xcited_Timeline-QR_Code.png"
+
+  const panelHeight = embedded
+    ? "100%"
+    : `calc(${Math.round(viewportPortion * 100)}dvh - ${headerHeight})`
 
   return (
     <div
-      className={`relative w-[80vw] h-[80vh] ${className}`}
+      className={`relative w-[92vw] md:w-[80vw] mx-auto ${className}`}
+      style={{
+        height: panelHeight,
+        marginTop: embedded ? 0 : headerHeight,
+      }}
     >
-      {/* Beveled frame + shader canvas */}
+      {/* Background / shader */}
       <div className="absolute inset-0 rounded-[30px] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
         {isMobile ? (
-          <div
-            className="w-full h-full animate-[mobileGradient_8s_ease_infinite] scale-[1.2] blur-[40px] saturate-[1.5]"
-            style={{
-              background: `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 33%, ${colors[2]} 66%, ${colors[3]} 100%)`,
-              backgroundSize: "200% 200%",
-            }}
-          />
+          <>
+            <div
+              className="absolute inset-0 animate-[mobileGradient_10s_ease_infinite] scale-[1.15] blur-[40px] saturate-[1.6]"
+              style={{
+                background: `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 33%, ${colors[2]} 66%, ${colors[3]} 100%)`,
+                backgroundSize: "200% 200%",
+              }}
+            />
+            <div className="absolute inset-0 bg-white/[0.06] backdrop-blur-2xl" />
+          </>
         ) : (
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
         )}
       </div>
 
-      {/* Border overlay */}
-      <div className="absolute inset-[5px] rounded-[20px] overflow-hidden bg-black/85 backdrop-blur-md shadow-[inset_0_0_20px_rgba(0,0,0,0.3)] z-[5] pointer-events-none" />
+      {/* Frame border */}
+      <div className="absolute inset-[5px] rounded-[20px] overflow-hidden bg-black/75 backdrop-blur-md shadow-[inset_0_0_24px_rgba(0,0,0,0.35)] z-[5] pointer-events-none" />
 
-      {/* Glass content overlay */}
-      <div className="relative z-10 h-full flex items-center justify-center p-6 pointer-events-none">
-        <div className="backdrop-blur-2xl bg-black/20 border border-white/10 rounded-3xl shadow-[0_0_60px_rgba(168,85,247,0.3),0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/5 w-full h-full max-w-7xl max-h-[85vh] flex flex-col p-8">
-          {children ? (
+      {/* Content glass (delayed fade-in) */}
+      <div
+        className="relative z-10 h-full p-0 md:p-6"
+        style={{
+          opacity: contentVisible ? 1 : 0,
+          transition: "opacity 700ms ease",
+          willChange: "opacity",
+        }}
+      >
+        <div className="relative h-full w-full rounded-3xl overflow-hidden border border-white/15 ring-1 ring-white/10 bg-white/[0.06] md:bg-black/20 backdrop-blur-2xl shadow-[0_0_60px_rgba(168,85,247,0.22),0_10px_30px_rgba(0,0,0,0.55)]">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-20 left-1/2 h-56 w-[120%] -translate-x-1/2 rotate-[-8deg] bg-white/[0.10] blur-2xl" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-black/25" />
+          </div>
 
-
-            // Custom layout (Art / Music, etc.)
-            <div className="h-full w-full pointer-events-auto">{children}</div>
-
-
-          ) : (
-            // Default 3-column layout
-            <div className="flex flex-col md:flex-row h-full gap-6">
-              {/* Left: Image */}
-              <div className="w-full md:w-1/4 flex-shrink-0 h-full">
-                <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                  <img
-                    src={resolvedImageSrc}
-                    alt="Project preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-
-              {/* Middle: Video / QR */}
-              <div className="flex-1 h-full pointer-events-auto">
-                <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                  {resolvedVideoSrc ? (
-                    <video
-                      src={resolvedVideoSrc}
+          <div className="relative h-full w-full p-4 md:p-8 overflow-hidden">
+            {children ? (
+              <div className="h-full w-full overflow-hidden">{children}</div>
+            ) : (
+              <div className="flex flex-col md:flex-row h-full gap-6 overflow-hidden">
+                <div className="w-full md:w-1/4 flex-shrink-0 h-full overflow-hidden">
+                  <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+                    <img
+                      src={resolvedImageSrc}
+                      alt="Project preview"
                       className="w-full h-full object-cover"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
                     />
-                  ) : resolvedQrSrc ? (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-black/60 to-black/40 p-12">
-                      <div className="bg-white p-6 rounded-2xl aspect-square max-w-md w-full">
-                        <img
-                          src={resolvedQrSrc}
-                          alt="QR Code"
-                          className="w-full h-full"
-                        />
-                      </div>
-                    </div>
-                  ) : null}
+                  </div>
                 </div>
-              </div>
 
-              {/* Right: Text */}
-              {showText && (
-                <div className="w-full md:w-1/5 flex-shrink-0 flex flex-col justify-center text-left">
-                  <h2 className="text-xl md:text-2xl lg:text-3xl font-bold drop-shadow-lg mb-3">
-                    {resolvedTitle}
-                  </h2>
-                  <p className="opacity-80 text-xs md:text-sm lg:text-base leading-snug drop-shadow">
-                    {resolvedSubtitle}
-                  </p>
+                <div className="flex-1 h-full overflow-hidden">
+                  <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+                    {resolvedVideoSrc ? (
+                      <video
+                        src={resolvedVideoSrc}
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                      />
+                    ) : resolvedQrSrc ? (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-black/60 to-black/40 p-12">
+                        <div className="bg-white p-6 rounded-2xl aspect-square max-w-md w-full">
+                          <img src={resolvedQrSrc} alt="QR Code" className="w-full h-full" />
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
+
+                {showText && (
+                  <div className="w-full md:w-1/5 flex-shrink-0 flex flex-col justify-center text-left overflow-hidden">
+                    <h2 className="text-xl md:text-2xl lg:text-3xl font-bold drop-shadow-lg mb-3">
+                      {resolvedTitle}
+                    </h2>
+                    <p className="opacity-80 text-xs md:text-sm lg:text-base leading-snug drop-shadow">
+                      {resolvedSubtitle}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Slide navigation (only if slides > 1 and no custom children) */}
       {hasMultipleSlides && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 pointer-events-auto">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
           <button
             onClick={prevSlide}
             className="px-3 py-1 rounded-xl bg-black/60 border border-white/20 text-xs md:text-sm hover:bg-black/80 transition"
@@ -398,79 +416,8 @@ export default function ShaderFrame({
         </div>
       )}
 
-      {/* resize observer target */}
-      <div ref={containerRef} className="absolute inset-0" />
-
-      {/* Optional controls */}
-      {showControls && (
-        <div className="absolute top-3 right-3 z-20 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl p-4 w-[260px]">
-          <h3 className="text-sm font-semibold mb-3">Controls</h3>
-          <Slider
-            label="Scale"
-            value={scale}
-            onChange={setScale}
-            min={0.1}
-            max={4}
-            step={0.01}
-          />
-          <Slider
-            label="Speed"
-            value={speed}
-            onChange={setSpeed}
-            min={0.1}
-            max={3}
-            step={0.1}
-          />
-          <Slider
-            label="ax"
-            value={ax}
-            onChange={setAx}
-            min={1}
-            max={15}
-            step={0.01}
-          />
-          <Slider
-            label="ay"
-            value={ay}
-            onChange={setAy}
-            min={1}
-            max={15}
-            step={0.01}
-          />
-          <Slider
-            label="az"
-            value={az}
-            onChange={setAz}
-            min={1}
-            max={15}
-            step={0.01}
-          />
-          <Slider
-            label="aw"
-            value={aw}
-            onChange={setAw}
-            min={1}
-            max={15}
-            step={0.01}
-          />
-          <Slider
-            label="bx"
-            value={bx}
-            onChange={setBx}
-            min={-1}
-            max={1}
-            step={0.01}
-          />
-          <Slider
-            label="by"
-            value={by}
-            onChange={setBy}
-            min={-1}
-            max={1}
-            step={0.01}
-          />
-        </div>
-      )}
+      {/* three.js resize target */}
+      <div ref={containerRef} className="absolute inset-0 pointer-events-none" />
 
       <style jsx global>{`
         @keyframes mobileGradient {
@@ -491,42 +438,6 @@ export default function ShaderFrame({
           }
         }
       `}</style>
-    </div>
-  )
-}
-
-/* ---------- Slider ---------- */
-
-function Slider({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-  step,
-}: {
-  label: string
-  value: number
-  onChange: (v: number) => void
-  min: number
-  max: number
-  step: number
-}) {
-  return (
-    <div className="mb-3">
-      <label className="block text-xs opacity-80 mb-1">
-        {label}:{" "}
-        <span className="text-[11px] opacity-60">{value.toFixed(2)}</span>
-      </label>
-      <input
-        type="range"
-        className="w-full"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-      />
     </div>
   )
 }

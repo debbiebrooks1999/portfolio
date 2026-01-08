@@ -2,12 +2,141 @@
 
 import React, { useState } from 'react'
 
+type TimelineEntry = {
+  id: string
+  period: string
+  role?: string
+  agencies: string[]
+  clients: string[]
+  achievements?: string[]
+  technologies: string[]
+  description: string
+}
+
+
 export default function CareerTimeline() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id)
   }
+
+  const CAREER_DATA: TimelineEntry[] = [
+    {
+      id: "2023-present",
+      period: "2023 - Present",
+      role: "Creative Technologist",
+      agencies: ["Magic Memories", "Yondr", "Poseidon", "Make Associates", "Circus 360"],
+      clients: ["SeaLife", "NJ DreamWheel", "Auckland Zoo", "Poseidon", "Bombay Sapphire"],
+      technologies: ["Three.js", "React", "WebGL", "Zappar", "8th Wall", "AR"],
+      description: "Motion graphics, 3D modelling, and AR promotional materials using Three.js, React, and WebGL on Zappar & 8th Wall platforms.",
+    },
+    {
+      id: "2020-2022",
+      period: "2020 - 2022",
+      role: "Creative Technologist",
+      agencies: ["National Gallery", "Blippar", "Cassette", "EyeKandy", "TRO", "Aircards"],
+      clients: ["National Gallery London", "Google", "Takeda", "Intel"],
+      technologies: ["A-Frame", "WebGL", "Three.js", "PlayCanvas", "GSAP", "JavaScript ES6"],
+      description: "Creating animations, interactive sound experiences, 360 video interactive experiences, and augmented reality for mobile browser and WebXR platforms.",
+    },
+    {
+      id: "2019-2020",
+      period: "2019 - 2020",
+      role: "Senior Developer",
+      agencies: ["The Mill"],
+      clients: ["MAC Cosmetics", "Chanel", "Mercedes", "Microsoft", "Samsung", "Mango"],
+      achievements: ["Delivered Instagram's first AR shopping filter for MAC Cosmetics"],
+      technologies: ["Spark AR", "JavaScript", "WebGL", "HTML5", "CSS3", "Webpack"],
+      description: "Pioneered Instagram's first AR shopping filter alongside Facebook team. Delivered Samsung Olympics microsite and various high-profile interactive experiences.",
+    },
+    {
+      id: "2017-2019",
+      period: "2017 - 2019",
+      role: "Lead Developer",
+      agencies: ["Rapport Design"],
+      clients: ["Berner"],
+      technologies: ["WordPress", "PHP", "JavaScript", "SOAP", "E-commerce"],
+      description: "Built bespoke storefront system with PHP/JavaScript/SOAP e-commerce for 5000 product lines with real-time pricing per customer.",
+    },
+    {
+      id: "2017-iris",
+      period: "Aug - Sep 2017",
+      role: "Frontend Developer",
+      agencies: ["Iris"],
+      clients: ["Value Retail / Bicester Village"],
+      technologies: ["React", "JavaScript", ".NET", "Umbraco", "SASS", "Grunt/Gulp"],
+      description: "Worked with backend .NET & QA team to deliver multi-locale site (Europe, Asia, Middle East) on tight deadline with 2 concurrent design templates.",
+    },
+    {
+      id: "2016-2017",
+      period: "2016 - 2017",
+      role: "Tech Lead",
+      agencies: ["The Mill"],
+      clients: ["Chevrolet"],
+      achievements: ["Tech lead on groundbreaking 360° HD video experience"],
+      technologies: ["JavaScript", "CSS3/SASS", "HTML5", "360 Video"],
+      description: "Tech lead on groundbreaking interactive 360-degree HD video web experience for Chevrolet homepage.",
+    },
+    {
+      id: "2011-2016",
+      period: "2011 - 2016",
+      role: "Freelance Frontend Developer",
+      agencies: [
+        "Brothers & Sisters",
+        "Karmarama",
+        "Blue Hive",
+        "Liquid Healthcare",
+        "Grand Union",
+        "MRM-Meteorite",
+        "Publicis Chemistry",
+        "VCCP",
+        "Kindred",
+        "Sapient Nitro"
+      ],
+      clients: ["Sky", "Ford", "Porsche", "Range Rover", "BT", "Bourne Leisure", "EE", "Mercedes", "Nike", "O2", "Harley Davidson", "St Mungos"],
+      technologies: ["JavaScript", "HTML5", "CSS3", "SVG", "SASS", "Git", "Responsive Design"],
+      description: "Adaptive/responsive apps across mobile, tablet, and desktop. Produced wireframes, strategy documents, and technical specifications.",
+    },
+    {
+      id: "2008-2011",
+      period: "2008 - 2011",
+      role: "Lead Developer",
+      agencies: ["Agency.com", "TBWA/London"],
+      clients: ["British Airways", "Apple", "Nike", "Zanussi", "IKEA", "Pringles", "Carbon Trust", "Canon"],
+      achievements: ["Developed JSFL banner production engine"],
+      technologies: ["jQuery", "JavaScript", "JSON", "REST", "Social Media APIs", "Flash"],
+      description: "Lead developer on high-profile campaigns. Implemented social media strategies on Facebook and Twitter. Worked on jQuery projects and webservices.",
+    },
+    {
+      id: "2006-2008",
+      period: "2006 - 2008",
+      role: "Lead Developer",
+      agencies: ["sixandco / FullSix"],
+      clients: ["Reckitt Benckiser", "Alfa Romeo", "P&G", "Acuvue", "Orange"],
+      technologies: ["HTML", "CSS", "ActionScript 2.0", "XML", "Flash"],
+      description: "Lead developer delivering interactive campaigns for major consumer brands across Europe.",
+    },
+    {
+      id: "2003-2008",
+      period: "2003 - 2008",
+      role: "Developer",
+      agencies: ["Spe Ltd"],
+      clients: ["Nuffield"],
+      technologies: ["ActionScript", "Video Editing", "Flash"],
+      description: "ActionScript development and video editing for educational film production company.",
+    },
+    {
+      id: "2000-2003",
+      period: "2000 - 2003",
+      role: "Graduate Developer",
+      agencies: ["Victoria Real"],
+      clients: ["Channel 4", "Camelot", "Pizza Hut", "Endemol", "William Hill", "Norwich Union"],
+      achievements: ["Worked on original Big Brother 2000 site"],
+      technologies: ["Flash", "ActionScript", "HTML", "JavaScript"],
+      description: "Started career working on the original Big Brother 2000 website and various high-profile builds for major UK brands.",
+    },
+  ]
 
   return (
     <div className="w-full max-w-5xl mx-auto">

@@ -1,7 +1,583 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { PROJECTS, type Project } from "../content-data";
+
+type Complexity = "low" | "medium" | "high";
+
+interface Project {
+  id: string;
+  title: string;
+  year: number;
+  thumbnail: string;
+  tags: string[];
+  description: string;
+  techStack: string[];
+  client: string;
+  agency?: string;
+  era?: "current" | "recent" | "legacy";
+  complexity: Complexity;
+  featured: boolean;
+  link: string;
+  video?: string;
+  images?: string[];
+  qrCode?: string;
+}
+
+const PROJECTS: Project[] = [
+  // === CURRENT ERA (2023-2025) ===
+  {
+    id: "volvo-vr-experience",
+    title: "Volvo VR Showroom",
+    year: 2025,
+    thumbnail: "/archive/volvo.png",
+    tags: ["WebXR", "React Three Fiber", "VR", "Meta Quest"],
+    description:
+      "Immersive 360° VR experience with hotspot navigation and video spheres for Meta Quest devices.",
+    techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
+    client: "Automotive",
+    agency: "NDA",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "dreamwheel-ar-portal",
+    title: "New York Dreamwheel AR Tourism",
+    year: 2025,
+    thumbnail: "/archive/NJLoading.png",
+    video: "./archive/dreamwheel.mp4",
+    qrCode: "./qr/NJ_Dream_Wheel-QR_Code.png",
+    tags: ["AR", "WebXR", "QR Portals", "Three.js"],
+    description:
+      "AR/VR experiences for Queenstown tourism with QR code portal system for gondola attractions.",
+    techStack: ["Three.js", "WebXR", "AR.js", "React"],
+    client: "Tourism",
+    agency: "Magic Memories",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "aquarium-ar-kids",
+    title: "Aquarium AR Kids Experience",
+    year: 2025,
+    thumbnail: "/archive/sealifeShark.PNG",
+    qrCode: "./qr/dreamwheel-qr.png",
+    tags: ["AR", "WebXR", "QR Portals", "Three.js"],
+    description:
+      "AR experiences for various aquarium attractions, animated models, particles and facts overlays with QR code portal system for kids.",
+    techStack: ["Three.js", "WebXR", "AR.js", "React"],
+    client: "Tourism",
+    agency: "Magic Memories",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "national-gallery-sound",
+    title: "Sensing The Unseen - National Gallery",
+    year: 2020,
+    thumbnail: "/archive/icon1.png",
+    tags: ["WebXR", "Virtual Tour", "Audio", "Three.js"],
+    video: "./archive//NG_Sensing the unseen_cropped.mp4",
+    description:
+      "Immersive virtual tour experience for the National Gallery London with spatial audio.",
+    techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
+    client: "Cultural Institution",
+    agency: "National Gallery",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "https://www.nationalgallery.org.uk/visiting/virtual-tours/sensing-the-unseen-at-home",
+  },
+  {
+    id: "auckland-zoo",
+    title: "Auckland Zoo AR Dinosaurs",
+    year: 2025,
+    thumbnail: "/archive/aucklandZooLogo.png",
+    qrCode: "./qr/AZ_Quetzalcoatlus-QR_Code.png",
+    video: "./archive/auckland_quetz.mp4",
+    tags: [
+      "WebAR",
+      "Audio",
+      "Three.js",
+      "Zappar",
+      "Mattercraft",
+      "Wildlife & Conservation",
+    ],
+    description:
+      "Dinosaur Discovery Track where visitors use phones to access AR dinosaur experiences at 25 animatronic dinosaurs.",
+    techStack: ["React", "Three.js", "WebAR", "Zappar"],
+    client: "Educational/Zoo",
+    agency: "Magic Memories",
+    era: "current",
+    complexity: "high",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "wash-n-wag",
+    title: "Wash N Wag Academy",
+    year: 2024,
+    thumbnail: "/archive/washnwag.png",
+    tags: ["Web Design", "Framer Motion", "React"],
+    description:
+      "Comprehensive website for dog grooming academy with complex animations and responsive design.",
+    techStack: ["React", "Framer Motion", "Tailwind", "Next.js"],
+    client: "Education",
+    era: "current",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "google-chromebook",
+    title: "Google Chromebook Setup Guide",
+    year: 2020,
+    thumbnail: "/archive/chromebook.png",
+    video: "./archive/chromebook_short.mp4",
+    tags: ["WebXR", "React Three Fiber", "VR", "Meta Quest"],
+    description: "Interactive AR setup guide for Google Chromebook devices.",
+    techStack: ["React", "Three.js", "WebXR", "@react-three/fiber"],
+    client: "Technology",
+    agency: "Cassette Group",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "http://www.web-ar.co.uk/g/index.html",
+  },
+  {
+    id: "publishing-portal",
+    title: "AR Publishers Portal",
+    year: 2023,
+    thumbnail: "/archive/portal.png",
+    qrCode: "./qr/AR_Portal_v2-QR_Code.png",
+    video: "./archive/portal.mp4",
+    tags: ["AR", "WebXR", "QR Portals", "Three.js"],
+    description: "Portal-based navigation system for AR publishing experiences.",
+    techStack: ["Three.js", "WebXR", "AR.js", "React"],
+    client: "Publishing",
+    agency: "Yondr",
+    era: "current",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "instagram-mac",
+    title: "M·A·C Cosmetics AR Try On",
+    year: 2019,
+    thumbnail: "/archive/mac.jpg",
+    video: "/archive/MacCosmeticsInsta.mp4",
+    tags: ["Instagram AR", "Spark AR", "Beauty Tech"],
+    description:
+      "First Instagram AR direct shopping filter for MAC Cosmetics product try-on.",
+    techStack: ["Spark AR", "Instagram API", "AR Effects"],
+    client: "Beauty/Retail",
+    agency: "The Mill - London",
+    era: "current",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "mlso-gift",
+    title: "AR Gift Experience",
+    year: 2023,
+    thumbnail: "/archive/mlso.png",
+    qrCode: "./qr/archive-qr.png",
+    tags: ["WebAR", "Gifting", "Interactive"],
+    description: "Visual Audio synced model AR gift unwrapping experience.",
+    techStack: ["Zappar", "Three.js", "WebAR"],
+    client: "Retail",
+    agency: "Yondr",
+    era: "current",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "strainge-beast",
+    title: "Strainge Beast Interactive",
+    year: 2020,
+    thumbnail: "/archive/strainge_beast.png",
+    video: "./archive/StraingeBeast-SHORT.mp4",
+    tags: ["WebGL", "Interactive", "Art"],
+    description: "Interactive web experience for Strainge Beast brand.",
+    techStack: ["Three.js", "WebGL", "AFrame"],
+    client: "Sierra Nevada",
+    agency: "Blippar",
+    era: "current",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "takeda",
+    title: "Takeda Pharma Experience",
+    year: 2021,
+    thumbnail: "/archive/takeda.png",
+    video: "./videos/takeda.mp4",
+    tags: ["WebGL", "Medical", "PlayCanvas"],
+    description: "Interactive pharmaceutical visualization experience.",
+    techStack: ["React", "Three.js", "WebGL"],
+    client: "Pharmaceutical",
+    agency: "Cassette Group",
+    era: "current",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "intel",
+    title: "Intel Interactive Demo",
+    year: 2022,
+    thumbnail: "/archive/PLayCanvas_Intel.png",
+    tags: ["WebGL", "Tech Demo", "3D"],
+    description: "Interactive 3D demo for Intel technology showcase.",
+    techStack: ["React", "Three.js", "WebGL"],
+    client: "Technology",
+    agency: "Eyekandy",
+    era: "current",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "helmet",
+    title: "3D Helmet Configurator",
+    year: 2024,
+    thumbnail: "/archive/helmet.jpg",
+    video: "/archive/helmet_effect capture 2.mov",
+    tags: ["WebGL", "3D", "E-commerce"],
+    description: "3D product configurator for helmet customization.",
+    techStack: ["Three.js", "React", "GLTF"],
+    client: "Retail",
+    agency: "Blippar",
+    era: "current",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+
+  // === RECENT ERA (2019-2022) ===
+  {
+    id: "broadway",
+    title: "Broadway Re-Launch",
+    year: 2020,
+    thumbnail: "/archive/broadway.png",
+    video: "/archive/broadway.mp4",
+    images: ["/archive/broadway-1.png", "/archive/broadway-2.png"],
+    tags: ["WebAR", "8th Wall", "Entertainment"],
+    description:
+      "AR experience for Broadway show re-launch using 8th Wall technology.",
+    techStack: ["8th Wall", "Three.js", "WebAR"],
+    client: "Retail",
+    agency: "Aircards",
+    era: "recent",
+    complexity: "medium",
+    featured: false,
+    link: "https://www.8thwall.com/aircards/broadway",
+  },
+
+  // === LEGACY ERA (2008-2018) - Major Brand Work ===
+  {
+    id: "chevrolet",
+    title: "Chevrolet Homepage Experience",
+    year: 2017,
+    thumbnail: "/archive/chev.jpg",
+    tags: ["Flash", "ActionScript", "High-Traffic", "Automotive"],
+    description:
+      "Lead developer for Chevrolet's flagship homepage, handling millions of monthly visitors with rich interactive Flash experiences.",
+    techStack: ["Flash", "ActionScript 3", "XML", "JavaScript"],
+    client: "Chevrolet (General Motors)",
+    agency: "The Mill - Chicago",
+    era: "legacy",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "bicester",
+    title: "Bicester Village Shopping Portal",
+    year: 2017,
+    thumbnail: "/archive/bicester.jpg",
+    tags: ["Flash", "Multi-language", "E-commerce", "Luxury"],
+    description:
+      "Multi-skin, multi-language shopping portal for Bicester Village luxury outlet, featuring three distinct visual themes and comprehensive localization.",
+    techStack: ["Flash", "ActionScript 3", "XML", "Multi-language Framework"],
+    client: "Bicester Village",
+    agency: "Iris",
+    era: "legacy",
+    complexity: "high",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "BA_T5_yesterday",
+    title: "British Airways T5 'Yesterday' - Award Winner",
+    year: 2008,
+    thumbnail: "/archive/BA_T5_yesterday.png",
+    tags: ["Flash", "Award-Winning", "Campaign", "Travel"],
+    description:
+      "Award-winning interactive experience for British Airways Terminal 5 opening, celebrating the history of flight with 'Yesterday' by The Beatles.",
+    techStack: ["Flash", "ActionScript 3", "Audio Synchronization"],
+    client: "British Airways",
+    agency: "Agency.com",
+    era: "legacy",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "canon",
+    title: "Canon Interactive Kiosk - Paris Event",
+    year: 2010,
+    thumbnail: "/archive/canonTouchScreen.png",
+    tags: ["Flash", "Touch Screen", "Kiosk", "Event"],
+    description:
+      "Large-scale touch screen kiosk experience for Canon at major Paris Canon Expo event",
+    techStack: [
+      "Flash",
+      "ActionScript 3",
+      "Touch Interface",
+      "Kiosk Framework",
+    ],
+    client: "Canon",
+    agency: "Tequila",
+    era: "legacy",
+    complexity: "high",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "butlin",
+    title: "Butlins Complete Rebrand",
+    year: 2010,
+    thumbnail: "/archive/butlins.jpg",
+    tags: ["Flash", "Rebrand", "Entertainment", "Family"],
+    description:
+      "Comprehensive digital rebrand for Butlins holiday resorts, modernizing the family entertainment brand for the digital age.",
+    techStack: ["Jade", "Javascript", "Modular"],
+    client: "Butlins",
+    agency: "Grand Union",
+    era: "legacy",
+    complexity: "high",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "ogilvy",
+    title: "Ogilvy Fellowship WordPress Portal",
+    year: 2010,
+    thumbnail: "/archive/OgilvyFellowshipWP.png",
+    tags: ["WordPress", "PHP", "Custom Theme"],
+    description:
+      "Custom WordPress portal for Ogilvy Fellowship program, managing applications and showcasing fellow work.",
+    techStack: ["WordPress", "PHP", "MySQL", "Custom Theme Development"],
+    client: "Ogilvy & Mather",
+    agency: "Ogilvy & Mather",
+    era: "legacy",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "mercedes",
+    title: "Mercedes-Benz 'Tweet Race'",
+    year: 2011,
+    thumbnail: "/archive/mercedes.png",
+    tags: ["Flash", "Social Media", "Real-time", "Automotive"],
+    description:
+      "Innovative social media campaign where Twitter interactions powered animated Mercedes vehicles on a virtual racetrack in real-time.",
+    techStack: ["Javascript", "Twitter API", "Real-time Animation"],
+    client: "Mercedes-Benz",
+    agency: "Razorfish",
+    era: "legacy",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "mercedes-fleet",
+    title: "Mercedes Fleet Digital Magazine",
+    year: 2013,
+    thumbnail: "/archive/mercedes-fleet.jpg",
+    tags: ["Flash", "Publishing", "Interactive Magazine"],
+    description:
+      "Interactive digital magazine for Mercedes fleet services, featuring rich media content and engaging page-flip animations.",
+    techStack: ["Flash", "ActionScript 3", "Page Flip Engine"],
+    client: "Mercedes-Benz",
+    agency: "MRM-Meteorite",
+    era: "legacy",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "BA-caribbean",
+    title: "British Airways Caribbean Campaign",
+    year: 2012,
+    thumbnail: "/archive/BA_carib.png",
+    tags: ["Flash", "Campaign", "Travel", "Interactive"],
+    description:
+      "Rich interactive campaign for British Airways Caribbean routes, featuring destination exploration and booking integration.",
+    techStack: ["Flash", "ActionScript 3", "Video Integration"],
+    client: "British Airways",
+    agency: "Agency.com & TBWA/ London",
+    era: "legacy",
+    complexity: "high",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "apple-itune",
+    title: "Apple iTunes - Leona Lewis Campaign",
+    year: 2011,
+    thumbnail: "/archive/leona.png",
+    tags: ["Flash", "Music", "Campaign", "High-Profile"],
+    description:
+      "iTunes promotional campaign for Leona Lewis album launch, featuring interactive music visualization.",
+    techStack: ["Flash", "ActionScript 3", "Audio Visualization"],
+    client: "Apple",
+    agency: "TBWA\\ Media Arts Lab",
+    era: "legacy",
+    complexity: "medium",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "apple-nano",
+    title: "Apple iPod Nano Launch Campaign",
+    year: 2011,
+    thumbnail: "/archive/nano.png",
+    tags: ["Flash", "Banner", "Product Launch", "High-Traffic"],
+    description:
+      "High-impact banner campaign for iPod Nano launch using custom JLSX banner engine for dynamic creative.",
+    techStack: ["Flash", "ActionScript 3", "JLSX Banner Engine"],
+    client: "Apple",
+    agency: "TBWA\\ Media Arts Lab",
+    era: "legacy",
+    complexity: "medium",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "harley-davidson",
+    title: "Harley Davidson Arabic Website",
+    year: 2014,
+    thumbnail: "/archive/HD.jpg",
+    tags: ["Flash", "RTL", "Localization", "Automotive"],
+    description:
+      "Complete Arabic website for Harley Davidson, featuring right-to-left layout and culturally adapted content for Middle Eastern markets.",
+    techStack: ["Flash", "ActionScript 3", "RTL Layout", "Arabic Typography"],
+    client: "Harley-Davidson",
+    agency: "Sapient Nitro",
+    era: "legacy",
+    complexity: "high",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "sky",
+    title: "Sky Go Interactive Experience",
+    year: 2016,
+    thumbnail: "/archive/sky.jpg",
+    tags: ["Flash", "ActionScript", "Streaming", "Interactive"],
+    description:
+      "Interactive promotional experience for Sky Go streaming service, showcasing on-demand content capabilities.",
+    techStack: ["Flash", "ActionScript 3", "Video Streaming"],
+    client: "Sky",
+    agency: "Brothers & Sisters Creative Ltd",
+    era: "legacy",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "BA-fisher",
+    title: "British Airways Audio Experience",
+    year: 2010,
+    thumbnail: "/archive/BA_Fisher.png",
+    tags: ["Flash", "Audio", "Interactive"],
+    description:
+      "Audio-driven interactive experience for British Airways, featuring dynamic soundscapes and musical elements.",
+    techStack: ["Flash", "ActionScript 3", "Audio API"],
+    client: "British Airways",
+    agency: "Agency.com & TBWA/ London",
+    era: "legacy",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "nike",
+    title: "Nike Banner Campaign",
+    year: 2010,
+    thumbnail: "/archive/nike.png",
+    tags: ["Flash", "Banner", "Sports", "High-Impact"],
+    description:
+      "High-impact display banner campaign for Nike, featuring dynamic animations and product showcases.",
+    techStack: ["Flash", "ActionScript 3", "Banner Framework"],
+    client: "Nike",
+    agency: "Agency.com & TBWA/ London",
+    era: "legacy",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "ITV-broadband",
+    title: "ITV Homepage Takeover - BT Broadband",
+    year: 2009,
+    thumbnail: "/archive/BT_Broadband.png",
+    tags: ["Flash", "Homepage Takeover", "High-Traffic", "Telecoms"],
+    description:
+      "Major homepage takeover for ITV.com promoting BT Broadband, handling massive concurrent traffic with rich interactive elements.",
+    techStack: ["Flash", "ActionScript 3", "High-Performance"],
+    client: "BT / ITV",
+    agency: "Agency.com & TBWA/ London",
+    era: "legacy",
+    complexity: "high",
+    featured: true,
+    link: "",
+  },
+  {
+    id: "BA-facebook",
+    title: "British Airways Height Cuisine Facebook App",
+    year: 2010,
+    thumbnail: "/archive/BA_HeightCuisine.png",
+    tags: ["Flash", "Facebook", "Social Media", "Food"],
+    description:
+      "Facebook application for British Airways 'Height Cuisine' campaign, engaging users with in-flight dining experiences.",
+    techStack: ["Flash", "ActionScript 3", "Facebook API"],
+    client: "British Airways",
+    agency: "Agency.com & TBWA/ London",
+    era: "legacy",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+  {
+    id: "sky-store",
+    title: "Sky Store Interactive Card Game",
+    year: 2017,
+    thumbnail: "/archive/sky_store.jpg",
+    tags: ["JavaScript", "Interactive", "Entertainment", "Gaming"],
+    description:
+      "Interactive card game experience for Sky Store, driving user engagement with Sky's digital entertainment platform.",
+    techStack: ["JavaScript", "Canvas API", "CSS3"],
+    client: "Sky",
+    agency: "Brothers & Sisters Creative Ltd",
+    era: "legacy",
+    complexity: "medium",
+    featured: false,
+    link: "",
+  },
+];
 
 interface ArchivePortalProps {
   activeSection?: number;
@@ -50,7 +626,7 @@ export default function ArchivePortal({ activeSection }: ArchivePortalProps) {
   };
 
   const allTags = useMemo(
-    () => Array.from(new Set(PROJECTS.flatMap((p) => p.tags || []))).sort(),
+    () => Array.from(new Set(PROJECTS.flatMap((p) => p.tags))).sort(),
     []
   );
 
@@ -72,10 +648,9 @@ export default function ArchivePortal({ activeSection }: ArchivePortalProps) {
         const matchesFilter =
           activeFilter === "all" ||
           (activeFilter === "featured" && project.featured) ||
-          (project.tags &&
-            project.tags.some((tag) =>
-              tag.toLowerCase().includes(activeFilter.toLowerCase())
-            ));
+          project.tags.some((tag) =>
+            tag.toLowerCase().includes(activeFilter.toLowerCase())
+          );
         if (!matchesFilter) return false;
       }
 
@@ -84,14 +659,11 @@ export default function ArchivePortal({ activeSection }: ArchivePortalProps) {
       const matchesSearch =
         lowerSearch === "" ||
         project.title.toLowerCase().includes(lowerSearch) ||
-        (project.description &&
-          project.description.toLowerCase().includes(lowerSearch)) ||
-        (project.client &&
-          project.client.toLowerCase().includes(lowerSearch)) ||
+        project.description.toLowerCase().includes(lowerSearch) ||
+        project.client.toLowerCase().includes(lowerSearch) ||
         (project.agency &&
           project.agency.toLowerCase().includes(lowerSearch)) ||
-        (project.tags &&
-          project.tags.some((tag) => tag.toLowerCase().includes(lowerSearch)));
+        project.tags.some((tag) => tag.toLowerCase().includes(lowerSearch));
 
       return matchesSearch;
     });
@@ -131,8 +703,8 @@ export default function ArchivePortal({ activeSection }: ArchivePortalProps) {
             <p className="text-xs text-slate-400">{quickStats}</p>
           </div>
 
-          {/* Search - Desktop Only */}
-          <div className="relative mb-2 hidden md:block">
+          {/* Search */}
+          <div className="relative mb-2">
             <input
               type="text"
               value={searchTerm}
@@ -155,8 +727,8 @@ export default function ArchivePortal({ activeSection }: ArchivePortalProps) {
             </svg>
           </div>
 
-          {/* Filter pills - Desktop Only */}
-          <div className="hidden md:flex gap-2 flex-wrap">
+          {/* Filter pills */}
+          <div className="flex gap-2 flex-wrap">
             <FilterPill
               label="All Projects"
               active={activeFilter === "all"}
@@ -326,9 +898,7 @@ function ProjectCard({
   if (project.video) slides.push({ type: "video", src: project.video });
   if (project.thumbnail)
     slides.push({ type: "image", src: project.thumbnail });
-  if (project.images) {
-    project.images.forEach((src) => slides.push({ type: "image", src }));
-  }
+  project.images?.forEach((src) => slides.push({ type: "image", src }));
 
   const hasMultiple = slides.length > 1;
 
@@ -466,7 +1036,7 @@ function ProjectCard({
           </p>
 
           <div className="flex flex-wrap gap-1.5">
-            {project.tags?.slice(0, 3).map((tag) => (
+            {project.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 className="px-2 py-0.5 bg-[#0b1018] text-[10px] text-slate-200 rounded-full border border-white/5"
@@ -474,7 +1044,7 @@ function ProjectCard({
                 {tag}
               </span>
             ))}
-            {project.tags && project.tags.length > 3 && (
+            {project.tags.length > 3 && (
               <span className="px-2 py-0.5 text-[10px] text-slate-500">
                 +{project.tags.length - 3}
               </span>
@@ -584,8 +1154,7 @@ function ProjectDetail({
         paddingRight: "env(safe-area-inset-right)",
       }}
     >
-      {/* Add extra top padding on mobile to account for fixed header */}
-      <div className="min-h-full flex items-start justify-center p-2 sm:p-3 md:p-6 pt-20 sm:pt-6">
+      <div className="min-h-full flex items-start justify-center p-2 sm:p-3 md:p-6">
         <div
           onClick={(e) => e.stopPropagation()}
           onTouchStart={handleTouchStart}
@@ -602,12 +1171,8 @@ function ProjectDetail({
 
                 <div className="mt-1.5 flex flex-wrap gap-2 text-xs sm:text-sm text-slate-400">
                   <span>{project.year}</span>
-                  {project.client && (
-                    <>
-                      <span className="text-slate-600">•</span>
-                      <span>{project.client}</span>
-                    </>
-                  )}
+                  <span className="text-slate-600">•</span>
+                  <span>{project.client}</span>
                   {project.agency && (
                     <>
                       <span className="text-slate-600">•</span>
@@ -616,18 +1181,16 @@ function ProjectDetail({
                   )}
                 </div>
 
-                {project.tags && project.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {project.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-0.5 bg-[#0b1018] border border-white/10 rounded-full text-[10px] text-slate-300"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {project.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 py-0.5 bg-[#0b1018] border border-white/10 rounded-full text-[10px] text-slate-300"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -730,51 +1293,45 @@ function ProjectDetail({
               {/* RIGHT COLUMN */}
               <div className="space-y-3">
                 {/* Description + QR */}
-                {(project.description || project.qrCode) && (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      {project.description && (
-                        <p className="text-xs sm:text-sm text-slate-200 leading-relaxed flex-1">
-                          {project.description}
-                        </p>
-                      )}
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed flex-1">
+                      {project.description}
+                    </p>
 
-                      {project.qrCode && (
-                        <div className="shrink-0 flex flex-col items-center gap-2 border border-emerald-500/25 bg-emerald-500/5 rounded-xl p-3 min-w-[160px]">
-                          <div className="bg-white p-2 rounded-lg">
-                            <img
-                              src={project.qrCode}
-                              alt="QR Code"
-                              className="w-20 h-20"
-                            />
-                          </div>
-                          <span className="text-[10px] text-emerald-300 font-semibold">
-                            Scan to launch
-                          </span>
+                    {project.qrCode && (
+                      <div className="shrink-0 flex flex-col items-center gap-2 border border-emerald-500/25 bg-emerald-500/5 rounded-xl p-3 min-w-[160px]">
+                        <div className="bg-white p-2 rounded-lg">
+                          <img
+                            src={project.qrCode}
+                            alt="QR Code"
+                            className="w-20 h-20"
+                          />
                         </div>
-                      )}
-                    </div>
+                        <span className="text-[10px] text-emerald-300 font-semibold">
+                          Scan to launch
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
 
                 {/* Tech */}
-                {project.techStack && project.techStack.length > 0 && (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
-                    <h3 className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">
-                      Technologies
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {project.techStack.map((tech) => (
-                        <span
-                          key={tech}
-                          className="px-2 py-1 bg-[#070a11] border border-white/10 rounded-lg text-xs sm:text-[10px] text-slate-100"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
+                  <h3 className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">
+                    Technologies
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {project.techStack.map((tech) => (
+                      <span
+                        key={tech}
+                        className="px-2 py-1 bg-[#070a11] border border-white/10 rounded-lg text-xs sm:text-[10px] text-slate-100"
+                      >
+                        {tech}
+                      </span>
+                    ))}
                   </div>
-                )}
+                </div>
 
                 {/* Info */}
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
@@ -782,27 +1339,25 @@ function ProjectDetail({
                     Info
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {project.complexity && (
-                      <div>
-                        <div className="text-[10px] text-slate-500 mb-1 uppercase tracking-wider">
-                          Complexity
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${
-                              project.complexity === "high"
-                                ? "bg-red-400"
-                                : project.complexity === "medium"
-                                ? "bg-yellow-400"
-                                : "bg-green-400"
-                            }`}
-                          />
-                          <span className="text-xs font-medium capitalize text-slate-100">
-                            {project.complexity}
-                          </span>
-                        </div>
+                    <div>
+                      <div className="text-[10px] text-slate-500 mb-1 uppercase tracking-wider">
+                        Complexity
                       </div>
-                    )}
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            project.complexity === "high"
+                              ? "bg-red-400"
+                              : project.complexity === "medium"
+                              ? "bg-yellow-400"
+                              : "bg-green-400"
+                          }`}
+                        />
+                        <span className="text-xs font-medium capitalize text-slate-100">
+                          {project.complexity}
+                        </span>
+                      </div>
+                    </div>
 
                     <div>
                       <div className="text-[10px] text-slate-500 mb-1 uppercase tracking-wider">
